@@ -1,0 +1,40 @@
+# =========================
+# 1. Entornos y Python
+# =========================
+venv_tfg/
+env/
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# =========================
+# 2. Datos e Imágenes (¡PESADO!)
+# =========================
+data/
+images/
+src/data/processed/
+*.jpg
+*.jpeg
+*.png
+*.csv
+*.json
+
+# =========================
+# 3. Modelos y Experimentos
+# =========================
+# Ignoramos pesos
+*.pth
+*.pt
+# Ignoramos BD de Optuna
+*.db
+# Ignoramos la carpeta de experimentos (Evita subir logs masivos de TensorBoard)
+experiments/
+
+# =========================
+# 4. Configuración del IDE / SO
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
