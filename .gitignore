@@ -9,10 +9,10 @@ __pycache__/
 .ipynb_checkpoints/
 
 # =========================
-# 2. Datos e Imágenes (¡PESADO!)
+# 2. Datos e Imágenes
 # =========================
-data/
-images/
+/data/
+/images/
 src/data/processed/
 *.jpg
 *.jpeg
