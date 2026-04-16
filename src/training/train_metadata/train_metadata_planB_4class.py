@@ -86,8 +86,8 @@ def train_plan_b_4class(
 
     # 🚨 NUEVAS RUTAS DE DATASET (4 Clases - 200k) 🚨
     # Activamos Modality Dropout en Train (is_train=True, dropout_prob=0.3)
-    train_ds = MetadataDatasetPlanB4Class("data/Splitted_data/Final_dataset_4class_200k/train.csv", is_train=True, dropout_prob=0.3)
-    val_ds = MetadataDatasetPlanB4Class("data/Splitted_data/Final_dataset_4class_200k/val.csv", is_train=False)
+    train_ds = MetadataDatasetPlanB4Class("Final_dataset_4class_200k/train.csv", is_train=True, dropout_prob=0.3)
+    val_ds = MetadataDatasetPlanB4Class("Final_dataset_4class_200k/val.csv", is_train=False)
     
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)

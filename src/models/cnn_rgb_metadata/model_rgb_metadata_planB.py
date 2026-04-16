@@ -3,7 +3,7 @@
 import torch
 import torch.nn as nn
 from src.models.cnn_vit_rgb.hybrid_model_3class import HybridViTCNN
-from src.models.metadata_branch.metadata_model_planB import MetadataMLPPlanB
+from src.models.cnn_metadata.metadata_model_planB import MetadataMLPPlanB
 
 class RGBMetadataModelPlanB(nn.Module):
     """

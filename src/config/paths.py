@@ -27,7 +27,7 @@ DATA_SRC_DIR = SRC_DIR / "data"
 DATA_PROCESSED_DIR = DATA_SRC_DIR / "processed"
 
 # Subdirectorios de processed
-IMAGES_RGB_DIR = DATA_PROCESSED_DIR / "imagenes_RGB"
+IMAGES_RGB_DIR = DATA_PROCESSED_DIR / "imagenes_RGB_224"
 LOGS_DIR = DATA_PROCESSED_DIR / "logs"
 
 

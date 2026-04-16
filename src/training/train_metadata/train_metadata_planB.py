@@ -94,8 +94,8 @@ def train_plan_b(
     logger = ExperimentLogger(experiment_name=experiment_path, config=config)
 
     # 🚨 NUEVAS RUTAS DE DATASET ABSOLUTAS (3 Clases) 🚨
-    train_ds = MetadataDatasetPlanB("data/Splitted_data/experiment_200k_3classes/train.csv", is_train=True, dropout_prob=0.3)
-    val_ds = MetadataDatasetPlanB("data/Splitted_data/experiment_200k_3classes/val.csv", is_train=False)
+    train_ds = MetadataDatasetPlanB("experiment_200k_3classes/train.csv", is_train=True, dropout_prob=0.3)
+    val_ds = MetadataDatasetPlanB("experiment_200k_3classes/val.csv", is_train=False)
     
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)

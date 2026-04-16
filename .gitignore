@@ -28,7 +28,7 @@ src/data/processed/
 *.pt
 # Ignoramos BD de Optuna
 *.db
-# Ignoramos la carpeta de experimentos (Evita subir logs masivos de TensorBoard)
+# Ignoramos la carpeta de experimentos
 experiments/
 
 # =========================

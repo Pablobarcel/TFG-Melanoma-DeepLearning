@@ -39,7 +39,7 @@ def run_epoch(model, dataloader, criterion_A, criterion_B, optimizer, device, is
             loss_A = criterion_A(out_A, yA)
             loss_B = criterion_B(out_B, yB)
             # Mantenemos el x2.0 de penalización a la clasificación multiclase
-            loss = loss_A + (2.0 * loss_B)
+            loss = loss_A + (1*loss_B) 
 
             if is_train:
                 loss = loss / accumulation_steps 
@@ -110,15 +110,15 @@ def train_hybrid_model(
 
     # 🎯 Aplicamos factor 1.5 y gamma 1.0 (Ganador de Optuna)
     pesos_clinicos_B = class_weights.clone()
-    pesos_clinicos_B[1] *= 1.5  
-    pesos_clinicos_B[2] *= 1.5  
-    criterion_headB = FocalLoss(weight=pesos_clinicos_B, gamma=1.0)
+    # pesos_clinicos_B[1] *= 1.5  Quitamos porque estamos poniendo demasiada importancia a las clases malignas y el modelo se esta volviendo loco
+    # pesos_clinicos_B[2] *= 1.5  
+    criterion_headB = FocalLoss(weight=pesos_clinicos_B, gamma=1.5)
 
     # 🧠 DIFFERENTIAL LEARNING RATE
     optimizer = optim.AdamW([
         # Expertos Universales (ImageNet) -> Velocidad / 100
-        {'params': model.cnn_backbone.parameters(), 'lr': learning_rate / 100},
-        {'params': model.vit_backbone.parameters(), 'lr': learning_rate / 100},
+        {'params': model.cnn_backbone.parameters(), 'lr': learning_rate / 10},
+        {'params': model.vit_backbone.parameters(), 'lr': learning_rate / 10},
         # Cabezas nuevas -> Velocidad normal
         {'params': model.head_A.parameters(), 'lr': learning_rate},
         {'params': model.head_B.parameters(), 'lr': learning_rate}

@@ -1,0 +1,53 @@
+% --- Capítulo 5: Entorno de desarrollo y herramientas tecnológicas ---
+\chapter{Entorno de desarrollo y herramientas tecnológicas}
+
+\section{Lenguaje de programación}
+% Breve justificación del uso de Python 3.x como estándar en la industria 
+% del Machine Learning y su rico ecosistema de librerías científicas.
+
+\section{Framework principal de Deep Learning: PyTorch}
+% Sustituimos TensorFlow por PyTorch, que es lo que realmente usas.
+\subsection{Justificación de la elección de PyTorch}
+% Mencionar su flexibilidad, el uso del grafo computacional dinámico 
+% y su facilidad para depurar modelos personalizados (como tu HybridViTCNN).
+\subsection{Ecosistema Torchvision}
+% Explicar el uso de torchvision para cargar los pesos preentrenados 
+% (ResNet18, ViT) y aplicar transformaciones de imágenes (Normalización, Resize).
+
+\section{Herramientas de procesamiento y manipulación de datos}
+\subsection{NumPy y Pandas}
+% Pandas para la fusión de CSVs, limpieza de la tabla clínica y creación del Master Group ID.
+% NumPy para las transformaciones matriciales de bajo nivel.
+\subsection{Scikit-Learn}
+% Imprescindible mencionarlo: lo usas para la normalización (StandardScaler), 
+% la codificación (OneHotEncoder) y el cálculo de métricas (F1-score, Recall, AUC).
+
+\section{Librerías de visión por computador}
+\subsection{OpenCV (cv2) y Pillow (PIL)}
+% Pillow para cargar las imágenes RGB estándar.
+% OpenCV es CRÍTICO mencionarlo aquí porque es el motor matemático que usas 
+% para generar tu rama de imágenes geométricas (Adaptive Radial Polar - ARP).
+
+\section{Librerías de optimización e interpretabilidad}
+\subsection{Optimización Bayesiana con Optuna}
+% Explicar por qué usas Optuna en lugar de un GridSearch tradicional: 
+% eficiencia computacional para buscar la mejor Focal Loss y Learning Rate.
+\subsection{Interpretabilidad visual con pytorch-grad-cam}
+% Justificar su uso para abrir la "caja negra" del modelo, verificar que no hay 
+% "Target Leakage" visual (Clever Hans effect) y generar mapas de calor médicos.
+
+\section{Entorno de ejecución y recursos hardware}
+\subsection{Configuración del entorno local (VS Code)}
+% Tu IDE de desarrollo.
+\subsection{Limitaciones de VRAM y paralelización}
+% Explicar las características de la GPU utilizada y cómo esto condicionó el 
+% uso de técnicas como "Gradient Accumulation" para poder entrenar modelos 
+% tan pesados (la Fusión Triple) sin quedarse sin memoria.
+
+\section{Reproducibilidad y control de versiones}
+\subsection{Fijación de semillas aleatorias (Seed locking)}
+% Explicar cómo fijar la semilla en PyTorch, Numpy y Python garantiza 
+% que el modelo siempre inicializa igual y los splits (5-fold) son repetibles.
+\subsection{Registro de métricas y \textit{Logs}}
+% Cómo se guardan los "best_model.pth" y los historiales de entrenamiento para 
+% trazar las gráficas de validación.

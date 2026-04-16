@@ -85,8 +85,8 @@ def train_plan_a_4class(
     logger = ExperimentLogger(experiment_name=experiment_path, config=config)
 
     # 🚨 NUEVAS RUTAS DE DATASET (4 Clases - 200k) 🚨
-    train_ds = MetadataDatasetPlanA4Class("data/Splitted_data/Final_dataset_4class_200k/train.csv")
-    val_ds = MetadataDatasetPlanA4Class("data/Splitted_data/Final_dataset_4class_200k/val.csv")
+    train_ds = MetadataDatasetPlanA4Class("Final_dataset_4class_200k/train.csv")
+    val_ds = MetadataDatasetPlanA4Class("Final_dataset_4class_200k/val.csv")
     
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)

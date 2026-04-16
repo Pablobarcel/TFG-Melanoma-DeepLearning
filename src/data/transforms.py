@@ -11,10 +11,6 @@ def get_train_transforms(img_size=224):
     y simular la elasticidad de la piel.
     """
     return transforms.Compose([
-        # --- 1. Geometría Avanzada ---
-        # Usamos Lanczos para preservar micro-texturas (retículo)
-        transforms.Resize((img_size, img_size), interpolation=InterpolationMode.LANCZOS),
-        
         # Rotación completa con relleno 'reflect' para no crear bordes negros artificiales
         transforms.RandomRotation(degrees=180),
         
@@ -50,7 +46,6 @@ def get_eval_transforms(img_size=224):
     Validación limpia: Solo Lanczos y Normalización.
     """
     return transforms.Compose([
-        transforms.Resize((img_size, img_size), interpolation=InterpolationMode.LANCZOS),
         transforms.ToTensor(),
         transforms.Normalize(
             mean=[0.485, 0.456, 0.406],
@@ -65,9 +60,7 @@ def get_train_transforms_arp():
     - Eje X = Ángulo
     - Eje Y = Radio
     """
-    return transforms.Compose([
-        transforms.Resize((224, 224), interpolation=InterpolationMode.LANCZOS),
-        
+    return transforms.Compose([        
         # Horizontal Flip en ARP = Invertir el sentido del ángulo (reloj vs contra-reloj).
         # ES VÁLIDO y aporta variedad.
         transforms.RandomHorizontalFlip(p=0.5),
@@ -90,7 +83,6 @@ def get_train_transforms_arp():
 
 def get_eval_transforms_arp():
     return transforms.Compose([
-        transforms.Resize((224, 224), interpolation=InterpolationMode.LANCZOS),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5], std=[0.5])
     ])

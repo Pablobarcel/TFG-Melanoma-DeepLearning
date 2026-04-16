@@ -1,0 +1,33 @@
+% --- Capítulo 8: Diseño de la red implementada ---
+\chapter{Diseño de la Red Implementada}
+
+\section{Arquitectura Global del Sistema de Fusión Triple}
+% Descripción del "Jefe Final": cómo las tres ramas se integran en un único grafo computacional.
+
+\section{Rama Visual Híbrida: Extractor RGB (CNN-ViT)}
+\subsection{Módulo Convolucional: ResNet18 como extractor de rasgos locales}
+\subsection{Módulo de Atención: Vision Transformer para relaciones globales}
+
+\section{Rama de Análisis Estructural: Red Convolucional ARP}
+% Diseño de la CNN específica para procesar proyecciones polares y bordes de la lesión.
+
+\section{Rama de Percepción Clínica: Perceptrón Multicapa (MLP)}
+% Implementación de la red para los Planes A y B de metadatos.
+
+\section{Integración y Toma de Decisión: \textit{Late Fusion}}
+% La capa de concatenación y el diseño del vector de características de 1280 dimensiones.
+\subsection{Topología de las Cabezas de Decisión (Dual-Head)}
+
+\section{Modelado Matemático del Entrenamiento}
+\subsection{Optimización frente al desbalanceo: \textit{Focal Loss}}
+\subsection{Función de pérdida combinada y ponderación de tareas}
+
+\section{Tácticas de Entrenamiento Avanzado}
+\subsection{Protocolo \textit{Linear Probing} y \textit{Fine-Tuning} global}
+\subsection{Aprendizaje Jerárquico mediante \textit{Differential Learning Rate}}
+% Explicación de las velocidades /100, /10 y /1 para cada sección de la red.
+\subsection{Regularización por \textit{Modality Dropout}}
+\subsection{Gestión de memoria y \textit{Gradient Accumulation}}
+
+\section{Optimización Bayesiana de Hiperparámetros (Optuna)}
+% Espacio de búsqueda y configuración de las pruebas (trials).

@@ -1,0 +1,42 @@
+% --- Capítulo 7: Métricas de evaluación de la capacidad predictiva ---
+\chapter{Métricas de evaluación y ajuste de umbrales}
+
+\section{Introducción a la evaluación en escenarios de extremo desbalanceo}
+% Explicar por qué evaluar un dataset médico (ISIC 2024) requiere métricas específicas 
+% para no enmascarar los errores en las clases minoritarias (los cánceres).
+
+\section{La Matriz de Confusión como base evaluativa}
+\subsection{Formulación binaria (Cabeza A: Triage Clínico)}
+% Estructura de Verdaderos Positivos (Cáncer detectado) vs Falsos Negativos (Cáncer ignorado).
+\subsection{Formulación multiclase (Cabeza B: Diagnóstico Diferencial)}
+% Cómo se lee la matriz cuando tenemos 3 o 4 clases compitiendo entre sí.
+
+\section{Métricas de evaluación deterministas}
+\subsection{La trampa de la Exactitud (\textit{Accuracy}) en imagen médica}
+% Explicar matemáticamente por qué un modelo inútil podría tener un 99% de Accuracy.
+\subsection{Sensibilidad (\textit{Recall}): La métrica prioritaria}
+% Por qué en el cribado del cáncer (Head A) atrapar todos los positivos es la prioridad absoluta.
+\subsection{Especificidad y Precisión}
+% El papel de no saturar a los especialistas con biopsias innecesarias (Falsos Positivos).
+
+\section{Métricas agregadas y de promediado}
+\subsection{El \textit{F1-Score} como medida de equilibrio}
+\subsection{Estrategias de promediado: \textit{Micro} vs. \textit{Macro F1-Score}}
+% 🚨 ESTO ES CLAVE PARA TU HEAD B 🚨
+% Explicar por qué tu código usa 'Macro F1-Score' para que la IA le dé la misma 
+% importancia a acertar un Melanoma que a acertar un Benigno.
+
+\section{Evaluación probabilística de la red}
+\subsection{Curva ROC (\textit{Receiver Operating Characteristic})}
+\subsection{Área Bajo la Curva (AUC) como medida de separabilidad}
+% Por qué el AUC es la métrica más honesta para evaluar la Cabeza A independientemente del umbral elegido.
+
+\section{Ajuste del Umbral de Decisión y Factor de Seguridad Clínico}
+% 🚨 AQUÍ DEMUESTRAS QUE PIENSAS COMO INGENIERO 🚨
+% Explicar la diferencia entre el umbral neutral matemático (0.5) y un umbral 
+% penalizado para minimizar los Falsos Negativos (mandar un melanoma a casa).
+
+\section{Justificación clínica de la estrategia de evaluación final}
+% Cierre: "En la Cabeza A se prioriza el Recall y el AUC para no perder pacientes, 
+% mientras que en la Cabeza B se prioriza el Macro F1-Score para asegurar que 
+% el sistema distingue bien entre distintos tipos de cáncer".

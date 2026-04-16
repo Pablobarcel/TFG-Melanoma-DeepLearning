@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  19 JAN 2026 12:46
+This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  15 APR 2026 19:56
  restricted system commands enabled.
 **TFG_BarceloJimenez_Pablo.tex
 (./TFG_BarceloJimenez_Pablo.tex
@@ -1159,9 +1159,9 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 
 Missing character: There is no – (U+2013) in font ec-lmr12!
 ]
-LaTeX Info: Redefining \sptext on input line 67.
-LaTeX Info: Redefining \. on input line 67.
-LaTeX Info: Redefining \% on input line 67.
+LaTeX Info: Redefining \sptext on input line 69.
+LaTeX Info: Redefining \. on input line 69.
+LaTeX Info: Redefining \% on input line 69.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1171,9 +1171,9 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [5]
-LaTeX Info: Redefining \sptext on input line 105.
-LaTeX Info: Redefining \. on input line 105.
-LaTeX Info: Redefining \% on input line 105.
+LaTeX Info: Redefining \sptext on input line 107.
+LaTeX Info: Redefining \. on input line 107.
+LaTeX Info: Redefining \% on input line 107.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1182,7 +1182,19 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
-[6])
+[6]
+LaTeX Info: Redefining \sptext on input line 144.
+LaTeX Info: Redefining \. on input line 144.
+LaTeX Info: Redefining \% on input line 144.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[7])
 \tf@toc=\write5
 
 \openout5 = TFG_BarceloJimenez_Pablo.toc
@@ -1196,7 +1208,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
-[7] (./TFG_BarceloJimenez_Pablo.lof
+[8] (./TFG_BarceloJimenez_Pablo.lof
 LaTeX Info: Redefining \sptext on input line 1.
 LaTeX Info: Redefining \. on input line 1.
 LaTeX Info: Redefining \% on input line 1.
@@ -1204,7 +1216,7 @@ LaTeX Info: Redefining \% on input line 1.
 \tf@lof=\write6
 
 \openout6 = TFG_BarceloJimenez_Pablo.lof
- [8
+ [9
 
 ] (./TFG_BarceloJimenez_Pablo.lot
 LaTeX Info: Redefining \sptext on input line 1.
@@ -1215,21 +1227,21 @@ LaTeX Info: Redefining \% on input line 1.
 
 \openout7 = TFG_BarceloJimenez_Pablo.lot
 
-[9
+(./capitulos/capitulo1.tex [10
 
 ]
 Capítulo 1.
-[10
+) (./capitulos/capitulo2.tex [11
 
 ]
 Capítulo 2.
-[11
+) (./capitulos/capitulo3.tex [12
 
 ]
 Overfull \vbox (206.46918pt too high) has occurred while \output is active []
 
-LaTeX Info: Redefining \. on input line 109.
-LaTeX Info: Redefining \% on input line 109.
+LaTeX Info: Redefining \. on input line 2.
+LaTeX Info: Redefining \% on input line 2.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1238,15 +1250,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
-[12
+[13
 Missing character: There is no – (U+2013) in font ec-lmbx12!
 ]
 Capítulo 3.
-[13
+[14
 
 ]
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-36.
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 2
+9.
  (C:/Users/pbarc/AppData/Local/Programs/MiKTeX/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
@@ -1254,19 +1266,8 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: T1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-LaTeX Info: Redefining \. on input line 152.
-LaTeX Info: Redefining \% on input line 152.
-
-
-Package fancyhdr Warning: \headheight is too small (12.0pt): 
-(fancyhdr)                Make it at least 15.35403pt, for example:
-(fancyhdr)                \setlength{\headheight}{15.35403pt}.
-(fancyhdr)                You might also make \topmargin smaller:
-(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
-
-[14]
-LaTeX Info: Redefining \. on input line 178.
-LaTeX Info: Redefining \% on input line 178.
+LaTeX Info: Redefining \. on input line 45.
+LaTeX Info: Redefining \% on input line 45.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1276,8 +1277,8 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [15]
-LaTeX Info: Redefining \. on input line 210.
-LaTeX Info: Redefining \% on input line 210.
+LaTeX Info: Redefining \. on input line 72.
+LaTeX Info: Redefining \% on input line 72.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1287,8 +1288,8 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [16]
-LaTeX Info: Redefining \. on input line 233.
-LaTeX Info: Redefining \% on input line 233.
+LaTeX Info: Redefining \. on input line 107.
+LaTeX Info: Redefining \% on input line 107.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1298,14 +1299,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [17]
-Overfull \hbox (38.42339pt too wide) in paragraph at lines 241--242
-[]\T1/lmr/m/n/12 Pa-ra re-sol-ver es-te pro-ble-ma, se de-fi-nió un iden-ti-fi-
-ca-dor uni-fi-ca-do de-no-mi-na-do \T1/lmtt/m/n/12 master_group_id\T1/lmr/m/n/1
-2 ,
+Overfull \hbox (16.68138pt too wide) in paragraph at lines 128--129
+[]\T1/lmr/bx/n/12 Tar-get Lea-ka-ge\T1/lmr/m/n/12 : Va-ria-bles ob-te-ni-das tra
+s el diag-nós-ti-co his-to-pa-to-ló-gi-co (\T1/lmtt/m/n/12 mel_thick_mm\T1/lm
+r/m/n/12 ,
  []
 
-LaTeX Info: Redefining \. on input line 259.
-LaTeX Info: Redefining \% on input line 259.
+LaTeX Info: Redefining \. on input line 140.
+LaTeX Info: Redefining \% on input line 140.
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 15.35403pt, for example:
@@ -1314,8 +1315,15 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [18]
-LaTeX Info: Redefining \. on input line 263.
-LaTeX Info: Redefining \% on input line 263.
+Overfull \hbox (38.42339pt too wide) in paragraph at lines 148--149
+[]\T1/lmr/m/n/12 Pa-ra re-sol-ver es-te pro-ble-ma, se de-fi-nió un iden-ti-fi-
+ca-dor uni-fi-ca-do de-no-mi-na-do \T1/lmtt/m/n/12 master_group_id\T1/lmr/m/n/1
+2 ,
+ []
+
+) (./capitulos/capitulo4.tex
+LaTeX Info: Redefining \. on input line 2.
+LaTeX Info: Redefining \% on input line 2.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -1325,39 +1333,64 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
 [19]
+LaTeX Info: Redefining \. on input line 2.
+LaTeX Info: Redefining \% on input line 2.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[20]
 Capítulo 4.
-[20
+) (./capitulos/capitulo5.tex [21
 
 ]
 Capítulo 5.
-[21
+) (./capitulos/capitulo6.tex [22
 
 ]
+Overfull \vbox (40.73123pt too high) has occurred while \output is active []
+
+LaTeX Info: Redefining \. on input line 3.
+LaTeX Info: Redefining \% on input line 3.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[23]
 Capítulo 6.
-[22
+) (./capitulos/capitulo7.tex [24
 
 ]
 Capítulo 7.
-[23
+) (./capitulos/capitulo8.tex [25
 
 ]
 Capítulo 8.
-[24
+) (./capitulos/capitulo9.tex [26
 
 ]
 Capítulo 9.
-[25
+) (./capitulos/capitulo10.tex [27
 
 ]
 Capítulo 10.
+)
 
-LaTeX Warning: Empty bibliography on input line 385.
+LaTeX Warning: Empty bibliography on input line 86.
 
-[26
+[28
 
 ]
 Apéndice A.
-[27
+[29
 
 ] (./TFG_BarceloJimenez_Pablo.aux
 LaTeX Info: Redefining \sptext on input line 12.
@@ -1370,20 +1403,20 @@ L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `TFG_BarceloJimenez_Pablo.out' has not change
 d.
-(rerunfilecheck)             Checksum: D06B04963812DE35D24C6B758837CEC0;27476.
+(rerunfilecheck)             Checksum: F6215B70B42A428130DB261EB7AFF94A;41768.
 Package logreq Info: Writing requests to 'TFG_BarceloJimenez_Pablo.run.xml'.
 
 \openout1 = TFG_BarceloJimenez_Pablo.run.xml
 )
 
 Here is how much of LuaTeX's memory you used:
- 25606 strings out of 476497
+ 25767 strings out of 476497
  100000,1977958 words of node,token memory allocated
  675 words of node memory still in use:
    8 hlist, 2 vlist, 2 rule, 1 local_par, 6 glue, 4 kern, 1 penalty, 3 glyph, 14
  attribute, 72 glue_spec, 9 attribute_list, 1 write nodes
-   avail lists: 2:1630,3:530,4:302,5:473,6:126,7:7135,8:2,9:682,10:17,11:1083
- 47004 multiletter control sequences out of 65536+600000
+   avail lists: 2:1747,3:530,4:313,5:623,6:129,7:7135,8:2,9:702,10:17,11:1079
+ 47067 multiletter control sequences out of 65536+600000
  57 fonts using 3681111 bytes
  72i,12n,78p,1020b,2437s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {C:/Users/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}<C:/U
@@ -1393,9 +1426,9 @@ ers/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/User
 s/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/
 pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/p
 barc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on TFG_BarceloJimenez_Pablo.pdf (28 pages, 269526 bytes).
+Output written on TFG_BarceloJimenez_Pablo.pdf (30 pages, 324476 bytes).
 
-PDF statistics: 773 PDF objects out of 1000 (max. 8388607)
- 157 named destinations out of 1000 (max. 131072)
- 977 words of extra memory for PDF output out of 10000 (max. 100000000)
+PDF statistics: 964 PDF objects out of 1000 (max. 8388607)
+ 195 named destinations out of 1000 (max. 131072)
+ 1265 words of extra memory for PDF output out of 10000 (max. 100000000)
 

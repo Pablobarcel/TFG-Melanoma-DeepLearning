@@ -89,8 +89,8 @@ def train_plan_a(
 
     # 🚨 NUEVAS RUTAS DE DATASET (3 Clases) 🚨
     # Asegúrate de que el Dataset interno use pd.read_csv directamente con esta ruta
-    train_ds = MetadataDataset("data/Splitted_data/experiment_200k_3classes/train.csv")
-    val_ds = MetadataDataset("data/Splitted_data/experiment_200k_3classes/val.csv")
+    train_ds = MetadataDataset("experiment_200k_3classes/train.csv")
+    val_ds = MetadataDataset("experiment_200k_3classes/val.csv")
     
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)

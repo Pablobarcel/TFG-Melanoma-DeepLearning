@@ -1,0 +1,32 @@
+
+% --- Capítulo 6: Preprocesamiento de los datos ---
+\chapter{Ingeniería y preprocesamiento de los datos}
+
+\section{Introducción al preprocesamiento}
+
+\section{Estrategia de fusión de bases de datos}
+% Fusión de SLICE-3D y los 27k malignos (Concat y Merge).
+
+\section{Armonización de columnas y depuración de variables}
+% Eliminación de metadatos trampa y sesgos de IA externa.
+
+\section{Tratamiento de valores faltantes e imputación}
+% Justificación del método de imputación para los metadatos.
+
+\section{Transformación de variables clínicas}
+\subsection{Codificación categórica (One-Hot Encoding)}
+% Justificar su uso en las variables 'sex' y 'anatom_site_general'.
+\subsection{Normalización numérica}
+% Explicar el uso del escalador (Z-score / StandardScaler) para homogeneizar magnitudes como edad y tamaño.
+
+\section{Preprocesamiento y generación de ramas visuales}
+\subsection{Estandarización de la rama RGB}
+% Redimensionamiento, normalización de tensores y gestión de formatos.
+\subsection{Transformación geométrica: Generación de la rama ARP}
+% Explicar el proceso algorítmico para convertir la imagen RGB a coordenadas polares (Angular Radial Partitioning).
+
+\section{Estrategia de partición y prevención de \textit{data leakage}}
+\subsection{Identificadores clínicos y el \textit{Master Group ID}}
+% Explicar la jerarquía de IDs y cómo se unificaron pacientes huérfanos y lesiones para evitar el Patient Leakage.
+\subsection{División de conjuntos de entrenamiento, validación y test}
+% Explicar cómo el Master Group ID permitió hacer un 'split' honesto, generando los CSV finales (training_with_paths.csv y test_with_paths.csv) listos para la red neuronal.
