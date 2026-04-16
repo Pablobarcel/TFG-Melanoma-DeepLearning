@@ -5,6 +5,7 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
+from src.config.paths import SPLITTED_DATA_DIR, IMAGES_RGB_DIR
 
 class RGBMetadataDatasetPlanA4Class(Dataset):
     def __init__(self, csv_file, transform=None):
@@ -12,7 +13,7 @@ class RGBMetadataDatasetPlanA4Class(Dataset):
         self.transform = transform
         
         # Ojo: Asegúrate de que la ruta base de tus imágenes sea la correcta
-        self.img_dir = "data/raw/images/" 
+        self.img_dir = IMAGES_RGB_DIR 
         
         # Plan A Features
         self.num_cols = ['age_approx', 'clin_size_long_diam_mm']

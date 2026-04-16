@@ -3,12 +3,13 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
+from src.config.paths import SPLITTED_DATA_DIR, PROJECT_ROOT
 
 class ARPMetadataDatasetPlanA4Class(Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
         self.transform = transform
-        self.img_dir = "data/raw/images_arp/" 
+        self.img_dir = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224" 
         
         self.num_cols = ['age_approx', 'clin_size_long_diam_mm']
         self.sex_cols = [c for c in self.df.columns if c.startswith('sex_')]

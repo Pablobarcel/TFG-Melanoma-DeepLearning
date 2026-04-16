@@ -6,13 +6,15 @@ import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
 
+from src.config.paths import SPLITTED_DATA_DIR, PROJECT_ROOT
+
 class ARPMetadataDatasetPlanA3Class(Dataset):
     def __init__(self, csv_file, transform=None):
         self.df = pd.read_csv(csv_file)
         self.transform = transform
         
         # 🚨 Asegúrate de que esta ruta apunte a donde tienes las imágenes generadas en ARP
-        self.img_dir = "data/raw/images_arp/" 
+        self.img_dir = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224" 
         
         # Plan A Features
         self.num_cols = ['age_approx', 'clin_size_long_diam_mm']

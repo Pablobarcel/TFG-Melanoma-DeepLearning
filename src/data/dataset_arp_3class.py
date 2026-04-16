@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from src.config.paths import SPLITTED_DATA_DIR, PROJECT_ROOT
 
 # Definimos la ruta de las imágenes ARP
-IMAGES_ARP_DIR = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP"
+IMAGES_ARP_DIR = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224"
 
 class ARPDataset3Class(Dataset):
     """

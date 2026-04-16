@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 
 from src.config.paths import SPLITTED_DATA_DIR, IMAGES_RGB_DIR, PROJECT_ROOT
 
-IMAGES_ARP_DIR = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP"
+IMAGES_ARP_DIR = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224"
 
 class HybridTripleDataset(Dataset):
     """

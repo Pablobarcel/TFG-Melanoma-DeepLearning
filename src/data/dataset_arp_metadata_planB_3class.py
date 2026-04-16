@@ -6,6 +6,8 @@ import pandas as pd
 import random
 from torch.utils.data import Dataset
 from PIL import Image
+from src.config.paths import SPLITTED_DATA_DIR, PROJECT_ROOT
+
 
 class ARPMetadataDatasetPlanB3Class(Dataset):
     def __init__(self, csv_file, transform=None, is_train=True, dropout_prob=0.3):
@@ -15,7 +17,7 @@ class ARPMetadataDatasetPlanB3Class(Dataset):
         self.dropout_prob = dropout_prob
         
         # 🚨 Ruta a las imágenes transformadas
-        self.img_dir = "data/raw/images_arp/" 
+        self.img_dir = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224" 
         
         self.num_A = ['age_approx', 'clin_size_long_diam_mm']
         self.cat_A = [c for c in self.df.columns if c.startswith(('sex_', 'anatom_site_general_'))]

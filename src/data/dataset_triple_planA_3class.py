@@ -5,6 +5,7 @@ import torch
 import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
+from src.config.paths import SPLITTED_DATA_DIR, IMAGES_RGB_DIR , PROJECT_ROOT
 
 class TripleDatasetPlanA3Class(Dataset):
     def __init__(self, csv_file, transform_rgb=None, transform_arp=None):
@@ -13,8 +14,8 @@ class TripleDatasetPlanA3Class(Dataset):
         self.transform_arp = transform_arp
         
         # 🚨 Carpetas separadas para las imágenes
-        self.img_dir_rgb = "data/raw/images/"
-        self.img_dir_arp = "data/raw/images_arp/"
+        self.img_dir_rgb = IMAGES_RGB_DIR
+        self.img_dir_arp = PROJECT_ROOT / "src" / "data" / "processed" / "imagenes_ARP_224"
         
         # --- Features del Plan A ---
         self.num_cols = ['age_approx', 'clin_size_long_diam_mm']
