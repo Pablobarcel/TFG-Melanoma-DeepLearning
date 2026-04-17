@@ -1,9 +1,9 @@
 [0] Config.pm:307> INFO - This is Biber 2.19
 [0] Config.pm:310> INFO - Logfile is 'TFG_BarceloJimenez_Pablo.blg'
-[101] biber-MSWIN64:340> INFO - === 
-[132] Biber.pm:419> INFO - Reading 'TFG_BarceloJimenez_Pablo.bcf'
-[210] Biber.pm:979> INFO - Found 0 citekeys in bib section 0
-[221] bbl.pm:660> INFO - Writing 'TFG_BarceloJimenez_Pablo.bbl' with encoding 'UTF-8'
-[222] bbl.pm:763> INFO - Output to TFG_BarceloJimenez_Pablo.bbl
-[222] Biber.pm:131> WARN - The file 'TFG_BarceloJimenez_Pablo.bcf' does not contain any citations!
-[222] Biber.pm:133> INFO - WARNINGS: 1
+[84] biber-MSWIN64:340> INFO - === 
+[116] Biber.pm:419> INFO - Reading 'TFG_BarceloJimenez_Pablo.bcf'
+[198] Biber.pm:979> INFO - Found 0 citekeys in bib section 0
+[208] bbl.pm:660> INFO - Writing 'TFG_BarceloJimenez_Pablo.bbl' with encoding 'UTF-8'
+[208] bbl.pm:763> INFO - Output to TFG_BarceloJimenez_Pablo.bbl
+[208] Biber.pm:131> WARN - The file 'TFG_BarceloJimenez_Pablo.bcf' does not contain any citations!
+[209] Biber.pm:133> INFO - WARNINGS: 1

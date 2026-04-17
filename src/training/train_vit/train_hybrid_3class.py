@@ -18,7 +18,8 @@ from src.models.cnn_vit_rgb.hybrid_model_3class import HybridViTCNN
 from src.utils.class_weights import compute_class_weights
 from src.utils.losses import FocalLoss, get_clinical_bce_loss
 
-def run_epoch(model, dataloader, criterion_A, criterion_B, optimizer, device, is_train=True, accumulation_steps=4):
+# 🚀 Añadimos scaler para AMP (Mixed Precision) como argumento
+def run_epoch(model, dataloader, criterion_A, criterion_B, optimizer, device, scaler, is_train=True, accumulation_steps=4):
     if is_train: model.train()
     else: model.eval()
 
@@ -34,18 +35,23 @@ def run_epoch(model, dataloader, criterion_A, criterion_B, optimizer, device, is
             yA = yA.float().to(device)
             yB = yB.long().to(device)
 
-            out_A, out_B = model(images)
-            
-            loss_A = criterion_A(out_A, yA)
-            loss_B = criterion_B(out_B, yB)
-            # Mantenemos el x2.0 de penalización a la clasificación multiclase
-            loss = loss_A + (1*loss_B) 
+            # 🚀 MIXED PRECISION: Bloque autocast
+            with torch.amp.autocast(device_type='cuda', enabled=is_train):
+                out_A, out_B = model(images)
+                loss_A = criterion_A(out_A, yA)
+                loss_B = criterion_B(out_B, yB)
+                # Mantenemos el x1.0 de penalización a la clasificación multiclase
+                loss = loss_A + (1*loss_B)
+                
+                if is_train:
+                    loss = loss / accumulation_steps 
 
             if is_train:
-                loss = loss / accumulation_steps 
-                loss.backward() 
+                # 🚀 SCALER: Manejamos el backward pass con el scaler para AMP
+                scaler.scale(loss).backward() 
                 if (i + 1) % accumulation_steps == 0:
-                    optimizer.step()
+                    scaler.step(optimizer)
+                    scaler.update()
                     optimizer.zero_grad()
 
             running_loss += loss.item() * (accumulation_steps if is_train else 1)
@@ -62,7 +68,8 @@ def run_epoch(model, dataloader, criterion_A, criterion_B, optimizer, device, is
             all_yB_pred.extend(predB.cpu().detach().numpy())
 
     if is_train and len(dataloader) % accumulation_steps != 0:
-        optimizer.step()
+        scaler.step(optimizer)
+        scaler.update()
         optimizer.zero_grad()
 
     epoch_loss = running_loss / len(dataloader)
@@ -87,10 +94,10 @@ def train_hybrid_model(
     config = {
         "model": "HybridViTCNN (ResNet18 + ViT-Tiny) - 3 Clases",
         "lr_heads": learning_rate,
-        "lr_backbones": learning_rate / 100, # Registro para la memoria del TFG
+        "lr_backbones": learning_rate / 10, # Registro para la memoria del TFG
         "weight_decay": weight_decay,
         "batch_size_effective": effective_batch,
-        "optimizer": "AdamW + Diff LR + GradAccum",
+        "optimizer": "AdamW + Diff LR + GradAccum + AMP",
         "loss": "Focal Loss (Head B) + Weighted BCE (Head A)"
     }
     
@@ -99,8 +106,23 @@ def train_hybrid_model(
     train_dataset = RGBDataset3Class("experiment_200k_3classes/train.csv", get_train_transforms())
     val_dataset = RGBDataset3Class("experiment_200k_3classes/val.csv", get_eval_transforms())
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    # 🚀 Añadimos prefetch_factor=4 a los DataLoaders
+    train_loader = DataLoader(
+        train_dataset, 
+        batch_size=batch_size, 
+        shuffle=True, 
+        num_workers=4, 
+        pin_memory=True,
+        prefetch_factor=4
+    )
+    val_loader = DataLoader(
+        val_dataset, 
+        batch_size=batch_size, 
+        shuffle=False, 
+        num_workers=4, 
+        pin_memory=True,
+        prefetch_factor=4
+    )
 
     model = HybridViTCNN(num_classes_headB=3, pretrained=True).to(device)
 
@@ -110,21 +132,20 @@ def train_hybrid_model(
 
     # 🎯 Aplicamos factor 1.5 y gamma 1.0 (Ganador de Optuna)
     pesos_clinicos_B = class_weights.clone()
-    # pesos_clinicos_B[1] *= 1.5  Quitamos porque estamos poniendo demasiada importancia a las clases malignas y el modelo se esta volviendo loco
-    # pesos_clinicos_B[2] *= 1.5  
     criterion_headB = FocalLoss(weight=pesos_clinicos_B, gamma=1.5)
 
     # 🧠 DIFFERENTIAL LEARNING RATE
     optimizer = optim.AdamW([
-        # Expertos Universales (ImageNet) -> Velocidad / 100
         {'params': model.cnn_backbone.parameters(), 'lr': learning_rate / 10},
         {'params': model.vit_backbone.parameters(), 'lr': learning_rate / 10},
-        # Cabezas nuevas -> Velocidad normal
         {'params': model.head_A.parameters(), 'lr': learning_rate},
         {'params': model.head_B.parameters(), 'lr': learning_rate}
     ], weight_decay=weight_decay)
 
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=3)
+    
+    # 🚀 Inicializamos el Scaler para AMP antes del bucle de épocas
+    scaler = torch.amp.GradScaler('cuda')
 
     best_val_loss = float('inf')
     patience_counter = 0
@@ -134,16 +155,15 @@ def train_hybrid_model(
         print(f"  Epoch {epoch + 1}/{num_epochs}...", end="")
         
         train_loss, train_metrics = run_epoch(
-            model, train_loader, criterion_headA, criterion_headB, optimizer, device, 
+            model, train_loader, criterion_headA, criterion_headB, optimizer, device, scaler,
             is_train=True, accumulation_steps=accumulation_steps
         )
         val_loss, val_metrics = run_epoch(
-            model, val_loader, criterion_headA, criterion_headB, optimizer, device, 
+            model, val_loader, criterion_headA, criterion_headB, optimizer, device, scaler,
             is_train=False
         )
 
         scheduler.step(val_loss)
-        # Extraemos el LR de la cabeza para el log (índice 2)
         current_lr_head = optimizer.param_groups[2]['lr']
 
         print(f" Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | F1: {val_metrics['headB']['macro_f1']:.4f} | LR_Head: {current_lr_head:.2e}")

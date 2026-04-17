@@ -21,7 +21,11 @@
 
 \section{Preprocesamiento y generación de ramas visuales}
 \subsection{Estandarización de la rama RGB}
-% Redimensionamiento, normalización de tensores y gestión de formatos.
+% Redimensionamiento, normalización de tensores y gestión de formatos. Explica que, en las primeras pruebas, el enfoque Online (redimensionar sobre la marcha en cada época usando interpolaciones complejas como Lanczos) generaba un cuello de botella grave de entrada/salida (I/O Bottleneck) y un uso de CPU del 100%, dejando a la GPU inactiva (CPU Starvation).
+
+% Detalla tu solución: Crear un pipeline de preprocesamiento Offline que redimensiona todo el corpus de 200.000 imágenes a 224x224 previamente.
+
+Menciona cómo esto redujo drásticamente el peso del dataset en disco y permitió que las transformaciones Online se limitaran únicamente a operaciones de bajo coste (giros, brillos), disparando la velocidad de lectura.
 \subsection{Transformación geométrica: Generación de la rama ARP}
 % Explicar el proceso algorítmico para convertir la imagen RGB a coordenadas polares (Angular Radial Partitioning).
 

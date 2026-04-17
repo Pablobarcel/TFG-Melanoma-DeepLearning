@@ -1,48 +1,117 @@
 % --- Capítulo 5: Entorno de desarrollo y herramientas tecnológicas ---
 \chapter{Entorno de desarrollo y herramientas tecnológicas}
 
+
+En este capítulo se detallan las herramientas hardware y software seleccionadas para la consecución de los objetivos del proyecto, justificando su elección en base a los requisitos de flexibilidad y rendimiento computacional exigidos por el procesamiento de imágenes médicas.
+
 \section{Lenguaje de programación}
-% Breve justificación del uso de Python 3.x como estándar en la industria 
-% del Machine Learning y su rico ecosistema de librerías científicas.
+
+El desarrollo íntegro de este Trabajo de Fin de Grado se ha llevado a cabo utilizando \textbf{Python} (en su versión 3.x) como lenguaje de programación principal. La elección de Python no es arbitraria, sino que responde a su consolidación como el estándar \textit{de facto} en la industria y en la comunidad investigadora dentro de los campos de la Inteligencia Artificial, el Aprendizaje Automático (\textit{Machine Learning}) y el Aprendizaje Profundo (\textit{Deep Learning}).
+
+La principal ventaja que ofrece Python frente a lenguajes compilados de más bajo nivel (como C++ o Java) es su sintaxis clara y legible, la cual permite una abstracción total de la gestión de memoria y otorga al desarrollador la capacidad de centrarse enteramente en el diseño lógico y matemático de los algoritmos. Además, su naturaleza multiparadigma —soportando programación orientada a objetos y programación funcional— resulta ideal para estructurar proyectos de experimentación científica iterativa.
+
+Sin embargo, el factor decisivo para su implementación en este trabajo es su inmenso y maduro ecosistema de librerías científicas. Python actúa como un lenguaje \textit{``pegamento''} (\textit{glue language}), lo que significa que, aunque el código se escriba con una sintaxis de alto nivel, las operaciones matemáticas subyacentes más costosas son ejecutadas en el \textit{backend} mediante rutinas compiladas en C o C++, garantizando un rendimiento óptimo al procesar cientos de miles de imágenes médicas.
 
 \section{Framework principal de Deep Learning: PyTorch}
-% Sustituimos TensorFlow por PyTorch, que es lo que realmente usas.
+
+Para la construcción, entrenamiento y evaluación de las redes neuronales, se ha optado por utilizar \textbf{PyTorch}, un marco de trabajo (\textit{framework}) de código abierto desarrollado originalmente por el laboratorio de investigación en inteligencia artificial de Meta (FAIR).
+
 \subsection{Justificación de la elección de PyTorch}
-% Mencionar su flexibilidad, el uso del grafo computacional dinámico 
-% y su facilidad para depurar modelos personalizados (como tu HybridViTCNN).
-\subsection{Ecosistema Torchvision}
-% Explicar el uso de torchvision para cargar los pesos preentrenados 
-% (ResNet18, ViT) y aplicar transformaciones de imágenes (Normalización, Resize).
+
+Aunque existen otras alternativas populares en la industria, como TensorFlow o Keras, la naturaleza específica de este proyecto exigía un \textit{framework} que ofreciera el máximo nivel de flexibilidad y control a bajo nivel sobre la arquitectura de la red. PyTorch fue seleccionado por dos razones arquitectónicas fundamentales:
+
+\begin{enumerate}
+	\item \textbf{El paradigma del Grafo Computacional Dinámico (\textit{Define-by-Run}):} A diferencia de otros \textit{frameworks} que exigen compilar un grafo estático antes de que fluyan los datos, PyTorch construye el grafo computacional sobre la marcha en cada iteración (\textit{forward pass}). Esta característica resulta indispensable cuando se diseñan arquitecturas a medida que no siguen un flujo lineal tradicional. En el caso de este trabajo, el modelo propuesto (\texttt{HybridViTCNN}) fusiona las extracciones de características de dos paradigmas radicalmente distintos: una Red Neuronal Convolucional (CNN) y un \textit{Vision Transformer} (ViT). Manejar la concatenación de estos tensores de diferente naturaleza geométrica es un proceso mucho más natural bajo un paradigma dinámico.
+	
+	\item \textbf{Naturaleza ``Pythónica'' y depuración (\textit{Debugging}):} PyTorch se integra de manera nativa con las herramientas de depuración de Python. Al trabajar con tensores directamente, es posible inspeccionar el valor numérico exacto de una activación o un gradiente en cualquier capa intermedia de la red. Esta transparencia ha sido crucial para diagnosticar problemas complejos durante el desarrollo, como la explosión de gradientes o la inspección de mapas de características para los algoritmos de interpretabilidad visual (Grad-CAM), permitiendo abrir la ``caja negra'' del modelo híbrido.
+\end{enumerate}
+
+\subsection{Ecosistema Torchvision y librerías asociadas}
+
+Uno de los pilares que sustentan a PyTorch es el paquete auxiliar \texttt{torchvision}, diseñado específicamente para resolver problemas de visión por computador. En este proyecto, su uso se ha centrado en dos tareas fundamentales:
+
+\begin{itemize}
+	\item \textbf{Transfer Learning y extracción de pesos preentrenados:} Mediante \texttt{torchvision.models}, se ha instanciado la rama convolucional del modelo cargando una arquitectura \textit{ResNet18} preentrenada con los pesos óptimos del desafío ImageNet1K. De manera análoga y complementaria, se integró la librería especializada \texttt{timm} (\textit{PyTorch Image Models}) para instanciar la rama atencional de la red, cargando los pesos de un \textit{Vision Transformer} (\texttt{ViT-Tiny}).
+	
+	\item \textbf{Transformaciones y Aumento de Datos (\textit{Data Augmentation}):} El módulo \texttt{torchvision.transforms} ha sido el motor encargado de procesar los lotes de imágenes en tiempo real. Permitió aplicar perturbaciones estocásticas (\texttt{RandomHorizontalFlip}, \texttt{ColorJitter}, \texttt{ElasticTransform}) durante el entrenamiento para actuar como un poderoso método de regularización, mitigando el sobreajuste y combatiendo los sesgos intrínsecos de los dispositivos de adquisición de las bases de datos.
+\end{itemize}
 
 \section{Herramientas de procesamiento y manipulación de datos}
+
+El ecosistema de Python para ciencia de datos ha sido la columna vertebral del preprocesamiento y estructuración de la información clínica antes de su ingesta en las redes neuronales.
+
 \subsection{NumPy y Pandas}
-% Pandas para la fusión de CSVs, limpieza de la tabla clínica y creación del Master Group ID.
-% NumPy para las transformaciones matriciales de bajo nivel.
+
+Para la manipulación de datos tabulares y metadatos clínicos, se ha recurrido a la combinación de las librerías \texttt{Pandas} y \texttt{NumPy}. 
+
+\texttt{Pandas} ha sido la herramienta fundamental para realizar la carga, limpieza y fusión (mediante operaciones \textit{merge} y \textit{concat}) de las múltiples bases de datos originadas tanto en repositorios históricos (ISIC Archive) como modernos (SLICE-3D). Su uso fue crítico para la limpieza de valores nulos, la imputación de datos faltantes ---utilizando valores sentinela como $-1$--- y, de manera muy especial, para la creación del identificador sintético \textit{Master Group ID}. Este identificador, generado a partir de condiciones lógicas jerárquicas (priorizando el ID del paciente sobre el de la lesión), permitió consolidar el historial clínico y evitar colisiones de datos.
+
+Por su parte, \texttt{NumPy} se utilizó para las transformaciones matriciales de bajo nivel y la vectorización de operaciones matemáticas. Funciones como \texttt{np.where} facilitaron la ejecución de lógica condicional rápida sobre conjuntos de más de 400.000 registros, mientras que las operaciones de apilamiento de matrices (\texttt{np.hstack}) permitieron ensamblar eficientemente las características numéricas y categóricas en un único tensor de entrada para alimentar la rama tabular del modelo (Perceptrón Multicapa).
+
 \subsection{Scikit-Learn}
-% Imprescindible mencionarlo: lo usas para la normalización (StandardScaler), 
-% la codificación (OneHotEncoder) y el cálculo de métricas (F1-score, Recall, AUC).
+
+\texttt{Scikit-Learn} es el estándar \textit{de facto} en el aprendizaje automático clásico, y en el marco de este proyecto de \textit{Deep Learning} ha desempeñado un papel auxiliar indispensable para preparar el terreno de los datos y auditar los resultados. En concreto, se ha hecho un uso exhaustivo de sus módulos de preprocesamiento, partición y evaluación:
+
+\begin{itemize}
+	\item \textbf{Normalización y Codificación:} Se empleó \texttt{StandardScaler} para aplicar una estandarización \textit{Z-score} a las variables clínicas y geométricas numéricas (como la edad o el área de la lesión), garantizando que las magnitudes dispares no desestabilizaran los gradientes de la red neuronal. Paralelamente, se utilizó \texttt{OneHotEncoder} para transformar variables categóricas (como el sexo o la ubicación anatómica) en vectores binarios ortogonales.
+	
+	\item \textbf{Prevención de Fuga de Datos (\textit{Data Leakage}):} Se implementó la clase \texttt{StratifiedGroupKFold} para generar las particiones de la validación cruzada. Esta herramienta matemática fue vital para asegurar dos condiciones simultáneamente: que la distribución fuertemente desbalanceada de clases de cáncer se mantuviera constante en cada partición (estratificación), y que todas las imágenes asociadas a un mismo \textit{Master Group ID} recayeran de forma íntegra en el mismo subconjunto. Esto último previno de forma absoluta que el modelo memorizara anomalías sistémicas de un paciente concreto durante el entrenamiento.
+	
+	\item \textbf{Cálculo de Métricas Clínicas:} Los módulos de \texttt{sklearn.metrics} se integraron en el bucle nativo de PyTorch para evaluar el rendimiento del modelo en tiempo de ejecución. Permitió calcular de forma robusta métricas clínicas complejas como el Área Bajo la Curva ROC (AUC), el \textit{F1-Score} macro, la sensibilidad (\textit{Recall}) específica para el melanoma y la matriz de confusión multiclase.
+\end{itemize}
 
 \section{Librerías de visión por computador}
-\subsection{OpenCV (cv2) y Pillow (PIL)}
-% Pillow para cargar las imágenes RGB estándar.
-% OpenCV es CRÍTICO mencionarlo aquí porque es el motor matemático que usas 
-% para generar tu rama de imágenes geométricas (Adaptive Radial Polar - ARP).
+
+El preprocesamiento de imágenes dermatoscópicas, paso previo ineludible a la extracción de características profundas, se apoyó en dos de las librerías más consolidadas en el campo de la visión por computador.
+
+\subsection{OpenCV y Pillow (PIL)}
+
+La librería \textbf{Pillow (PIL)} se utilizó nativamente dentro de las clases de iteración de datos de PyTorch (\texttt{Dataset}). PIL destaca por su eficiencia y rapidez al decodificar archivos de imagen en formato RGB desde el disco de estado sólido, integrándose a la perfección con la cadena de transformaciones estocásticas (\textit{Data Augmentation}) definida en el entrenamiento.
+
+Por otro lado, \textbf{OpenCV} (\textit{Open Source Computer Vision Library}) se erigió como el motor matemático crítico para la ingeniería de características visuales. Dada la variabilidad en la iluminación, los bordes artificiales (viñetas del dermatoscopio) y la presencia de artefactos clínicos (como reglas de medición o vello) en las imágenes originales, se empleó OpenCV para generar una representación alternativa de las lesiones: la transformada \textit{Adaptive Radial Polar} (ARP). 
+
+Mediante funciones de conversión de espacios de color y la aplicación algorítmica de proyecciones log-polares (\texttt{cv2.linearPolar}), OpenCV permitió desenrollar geométricamente la lesión, aislando su estructura morfológica y la asimetría de los bordes frente al ruido de adquisición. Esto fue determinante para alimentar una rama específica de la red neuronal, forzándola a ignorar el sesgo de la cámara (efecto \textit{Clever Hans}) y centrarse en la patología.
 
 \section{Librerías de optimización e interpretabilidad}
+
+El entrenamiento de arquitecturas de aprendizaje profundo no solo requiere la definición de la red, sino también la búsqueda eficiente de sus hiperparámetros óptimos y la posterior auditoría clínica de sus decisiones. Para cubrir estas necesidades, se integraron herramientas avanzadas de optimización e Inteligencia Artificial Explicable (XAI).
+
 \subsection{Optimización Bayesiana con Optuna}
-% Explicar por qué usas Optuna en lugar de un GridSearch tradicional: 
-% eficiencia computacional para buscar la mejor Focal Loss y Learning Rate.
+
+La búsqueda de hiperparámetros óptimos es uno de los mayores desafíos computacionales en el entrenamiento de redes neuronales profundas. Tradicionalmente, se han utilizado enfoques de fuerza bruta como la búsqueda en cuadrícula (\textit{Grid Search}). Sin embargo, dada la magnitud de los datos de este estudio y el coste temporal de entrenar la arquitectura \texttt{HybridViTCNN}, explorar todas las combinaciones posibles resultaba computacionalmente inasumible.
+
+Para solventar esta limitación, se implementó el \textit{framework} \texttt{Optuna}, el cual emplea algoritmos de Optimización Bayesiana ---específicamente el estimador TPE (\textit{Tree-structured Parzen Estimator})---. A diferencia de la búsqueda aleatoria o en cuadrícula, \texttt{Optuna} utiliza el historial de los experimentos previos para predecir probabilísticamente qué zonas del espacio de hiperparámetros tienen mayor potencial de mejorar el modelo, convergiendo a la solución óptima en una fracción del tiempo. 
+
+En este trabajo, \texttt{Optuna} fue fundamental para sintonizar el \textit{Learning Rate}, el decaimiento de pesos (\textit{Weight Decay}) y, de forma crítica, el parámetro $\gamma$ (gamma) de la función de coste \textit{Focal Loss}, esencial para calibrar la penalización ante el fuerte desbalanceo clínico de las clases.
+
 \subsection{Interpretabilidad visual con pytorch-grad-cam}
-% Justificar su uso para abrir la "caja negra" del modelo, verificar que no hay 
-% "Target Leakage" visual (Clever Hans effect) y generar mapas de calor médicos.
+
+Uno de los principales impedimentos para la adopción clínica de los modelos de \textit{Deep Learning} es su naturaleza de ``caja negra'' (\textit{black-box}). Un modelo puede arrojar excelentes métricas de validación por los motivos equivocados, aprendiendo atajos estadísticos en lugar de características anatómicas reales.
+
+Para dotar al modelo de explicabilidad clínica, se integró la librería \texttt{pytorch-grad-cam}. Esta herramienta implementa el algoritmo \textit{Grad-CAM} (\textit{Gradient-weighted Class Activation Mapping}), el cual utiliza los gradientes que fluyen hacia la última capa convolucional de la red ---en este caso, el bloque de extracción de la arquitectura \textit{ResNet18}--- para generar un mapa de calor que resalta las regiones espaciales de la imagen que mayor impacto tuvieron en la decisión final.
+
+El uso de esta librería resultó de incalculable valor durante la fase forense del proyecto para identificar fugas de información (\textit{Target Leakage}) y diagnosticar el conocido efecto \textit{Clever Hans} o sesgo de dominio. Como se analizará en la memoria, los mapas de calor permitieron descubrir que, antes de aplicar técnicas de regularización geométricas, el modelo ignoraba la lesión cutánea y basaba su diagnóstico maligno en artefactos visuales de los dispositivos de adquisición (como viñetas oscuras de dermatoscopios antiguos o marcas de tinta quirúrgica).
 
 \section{Entorno de ejecución y recursos hardware}
-\subsection{Configuración del entorno local (VS Code)}
-% Tu IDE de desarrollo.
+
+El entrenamiento de modelos híbridos que fusionan tensores de distinta naturaleza sobre cientos de miles de imágenes exige una orquestación precisa de los recursos de \textit{hardware} y \textit{software}.
+
+\subsection{Configuración del entorno local}
+
+Como Entorno de Desarrollo Integrado (IDE) principal se utilizó \textbf{Visual Studio Code} (VS Code). Su elección se fundamenta en su robusta integración con Python, su capacidad para ejecutar y depurar \textit{Jupyter Notebooks} de forma nativa, y su versatilidad para gestionar entornos virtuales aislados.
+
 \subsection{Limitaciones de VRAM y paralelización}
-% Explicar las características de la GPU utilizada y cómo esto condicionó el 
-% uso de técnicas como "Gradient Accumulation" para poder entrenar modelos 
-% tan pesados (la Fusión Triple) sin quedarse sin memoria.
+
+El desarrollo del proyecto se enfrentó a un desafío de infraestructura significativo, dividiéndose la ejecución en dos entornos distintos:
+
+\begin{itemize}
+	\item \textbf{Entorno Local (Estación de trabajo):} Equipado con un procesador de alto rendimiento y 32 GB de memoria RAM de sistema, pero limitado por una unidad de procesamiento gráfico (GPU) NVIDIA de 6 GB de VRAM. Este entorno se utilizó para la limpieza de datos tabulares, ingeniería de características, análisis forense y pruebas unitarias.
+	\item \textbf{Entorno en la Nube (Kaggle):} Para el entrenamiento exhaustivo a gran escala, se recurrió a un entorno multi-GPU compuesto por dos tarjetas \textbf{NVIDIA Tesla T4} de 15 GB de VRAM cada una.
+\end{itemize}
+
+El principal cuello de botella radicó en el consumo de memoria gráfica. La arquitectura propuesta procesa simultáneamente un bloque convolucional y un \textit{Vision Transformer}, los cuales deben almacenar sus respectivos mapas de activaciones y gradientes durante el paso hacia atrás (\textit{backward pass}). Al intentar procesar tamaños de lote (\textit{batch sizes}) de 128 o 256 imágenes, la red saturaba la capacidad gráfica, provocando errores de tipo \textit{CUDA Out of Memory} (OOM).
+
+Adicionalmente, el trasiego de imágenes de alta resolución desde el disco hacia la GPU corría el riesgo de generar un cuello de botella de entrada/salida (E/S). Esto se mitigó mediante el uso de discos de estado sólido \textbf{NVMe} y el uso de múltiples hilos de lectura (\textit{DataLoaders workers}). La solución técnica para sortear la limitación de VRAM ---basada en la Acumulación de Gradientes (\textit{Gradient Accumulation}) y la Precisión Mixta Automática (\textit{AMP})--- será detallada en el Capítulo 8.
 
 \section{Reproducibilidad y control de versiones}
 \subsection{Fijación de semillas aleatorias (Seed locking)}

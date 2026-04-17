@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  15 APR 2026 19:56
+This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  17 APR 2026 11:37
  restricted system commands enabled.
 **TFG_BarceloJimenez_Pablo.tex
 (./TFG_BarceloJimenez_Pablo.tex
@@ -1349,11 +1349,75 @@ Capítulo 4.
 
 ]
 Capítulo 5.
-) (./capitulos/capitulo6.tex [22
+[22
 
+
+Missing character: There is no — (U+2014) in font ec-lmr12!
+Missing character: There is no — (U+2014) in font ec-lmr12!
 ]
-Overfull \vbox (40.73123pt too high) has occurred while \output is active []
+Overfull \hbox (51.28241pt too wide) in paragraph at lines 34--35
+[]\T1/lmr/bx/n/12 Trans-fer Lear-ning y ex-trac-ción de pe-sos pre-en-tre-na-do
+s: \T1/lmr/m/n/12 Me-dian-te \T1/lmtt/m/n/12 torchvision.models\T1/lmr/m/n/12 ,
+ []
 
+LaTeX Info: Redefining \. on input line 35.
+LaTeX Info: Redefining \% on input line 35.
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[23]
+Overfull \hbox (19.32462pt too wide) in paragraph at lines 36--37
+\T1/lmr/m/n/12 nes en tiem-po real. Per-mi-tió apli-car per-tur-ba-cio-nes es-t
+o-cás-ti-cas (\T1/lmtt/m/n/12 RandomHorizontalFlip\T1/lmr/m/n/12 ,
+ []
+
+LaTeX Info: Redefining \. on input line 57.
+LaTeX Info: Redefining \% on input line 57.
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[24]
+LaTeX Info: Redefining \. on input line 74.
+LaTeX Info: Redefining \% on input line 74.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[25]
+LaTeX Info: Redefining \. on input line 92.
+LaTeX Info: Redefining \% on input line 92.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[26]
+LaTeX Info: Redefining \. on input line 113.
+LaTeX Info: Redefining \% on input line 113.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 15.35403pt, for example:
+(fancyhdr)                \setlength{\headheight}{15.35403pt}.
+(fancyhdr)                You might also make \topmargin smaller:
+(fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
+
+[27]) (./capitulos/capitulo6.tex
 LaTeX Info: Redefining \. on input line 3.
 LaTeX Info: Redefining \% on input line 3.
 
@@ -1364,21 +1428,21 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                You might also make \topmargin smaller:
 (fancyhdr)                \addtolength{\topmargin}{-3.35403pt}.
 
-[23]
+[28]
 Capítulo 6.
-) (./capitulos/capitulo7.tex [24
+) (./capitulos/capitulo7.tex [29
 
 ]
 Capítulo 7.
-) (./capitulos/capitulo8.tex [25
+) (./capitulos/capitulo8.tex [30
 
 ]
 Capítulo 8.
-) (./capitulos/capitulo9.tex [26
+) (./capitulos/capitulo9.tex [31
 
 ]
 Capítulo 9.
-) (./capitulos/capitulo10.tex [27
+) (./capitulos/capitulo10.tex [32
 
 ]
 Capítulo 10.
@@ -1386,11 +1450,11 @@ Capítulo 10.
 
 LaTeX Warning: Empty bibliography on input line 86.
 
-[28
+[33
 
 ]
 Apéndice A.
-[29
+[34
 
 ] (./TFG_BarceloJimenez_Pablo.aux
 LaTeX Info: Redefining \sptext on input line 12.
@@ -1403,32 +1467,37 @@ L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `TFG_BarceloJimenez_Pablo.out' has not change
 d.
-(rerunfilecheck)             Checksum: F6215B70B42A428130DB261EB7AFF94A;41768.
+(rerunfilecheck)             Checksum: 3D839B7044E9F98657FAE8DB7787B003;41789.
 Package logreq Info: Writing requests to 'TFG_BarceloJimenez_Pablo.run.xml'.
 
 \openout1 = TFG_BarceloJimenez_Pablo.run.xml
 )
 
 Here is how much of LuaTeX's memory you used:
- 25767 strings out of 476497
+ 25774 strings out of 476497
  100000,1977958 words of node,token memory allocated
- 675 words of node memory still in use:
-   8 hlist, 2 vlist, 2 rule, 1 local_par, 6 glue, 4 kern, 1 penalty, 3 glyph, 14
- attribute, 72 glue_spec, 9 attribute_list, 1 write nodes
-   avail lists: 2:1747,3:530,4:313,5:623,6:129,7:7135,8:2,9:702,10:17,11:1079
+ 692 words of node memory still in use:
+   8 hlist, 2 vlist, 2 rule, 1 local_par, 6 glue, 5 kern, 1 penalty, 3 glyph, 18
+ attribute, 72 glue_spec, 11 attribute_list, 1 write nodes
+   avail lists: 2:1741,3:530,4:313,5:626,6:129,7:7135,8:2,9:702,10:17,11:1079
  47067 multiletter control sequences out of 65536+600000
  57 fonts using 3681111 bytes
  72i,12n,78p,1020b,2437s stack positions out of 10000i,1000n,20000p,200000b,200000s
-{C:/Users/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}<C:/U
-sers/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Us
-ers/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb><C:/Us
-ers/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/User
-s/pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/
-pbarc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/p
-barc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on TFG_BarceloJimenez_Pablo.pdf (30 pages, 324476 bytes).
+{C:/Users/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{
+C:/Users/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Us
+ers/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Use
+rs/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}<C:/Users/pb
+arc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/pba
+rc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb><C:/Users/pba
+rc/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:/Users/pbar
+c/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/pbarc/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr17.pfb><C:/Users/pbarc/Ap
+pData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri12.pfb><C:/Users/pbarc/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/pbarc/AppD
+ata/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
+Output written on TFG_BarceloJimenez_Pablo.pdf (35 pages, 358923 bytes).
 
-PDF statistics: 964 PDF objects out of 1000 (max. 8388607)
- 195 named destinations out of 1000 (max. 131072)
+PDF statistics: 1000 PDF objects out of 1000 (max. 8388607)
+ 202 named destinations out of 1000 (max. 131072)
  1265 words of extra memory for PDF output out of 10000 (max. 100000000)
 

@@ -28,6 +28,10 @@
 % Explicación de las velocidades /100, /10 y /1 para cada sección de la red.
 \subsection{Regularización por \textit{Modality Dropout}}
 \subsection{Gestión de memoria y \textit{Gradient Accumulation}}
+% Gradient Accumulation: Explica cómo lograste simular un Batch Size de 128 matemáticamente usando sub-lotes físicos de 32 (que sí cabían en tus 6GB de VRAM), acumulando gradientes en 4 pasos antes de actualizar los pesos.
 
+% Automatic Mixed Precision (AMP): Detalla cómo activaste los Tensor Cores de las gráficas RTX/T4 para calcular en 16 bits (FP16) en lugar de 32 bits (FP32). Explica que esto no solo redujo a la mitad la memoria RAM de vídeo necesaria, sino que aceleró masivamente el cálculo matricial.
+
+% Data Pipeline (Workers y Prefetch): Añade un párrafo explicando cómo, para evitar el GPU Starvation, configuraste el DataLoader explotando al máximo la CPU multihilo (num_workers=4, pin_memory=True y prefetch_factor=4), asegurando que la gráfica siempre tuviera datos listos para procesar.
 \section{Optimización Bayesiana de Hiperparámetros (Optuna)}
 % Espacio de búsqueda y configuración de las pruebas (trials).
