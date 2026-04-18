@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # Configuración de ruta
-CSV_PATH = r"C:/TFG/data/Original_Data/ISIC_FINAL/isic_metadata_full.csv"
+CSV_PATH = "C:\TFG\images\images_ISIC_FINAL\metadata.csv"
 
 def auditoria_clinica_avanzada(csv_path):
     print("="*80)
