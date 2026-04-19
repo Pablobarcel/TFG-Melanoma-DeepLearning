@@ -54,141 +54,140 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.8.2}Heterogeneidad de bases de datos}{13}{subsection.2.8.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.8.3}Riesgos de \textit  {data leakage}}{13}{subsection.2.8.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2.9}Posicionamiento del presente trabajo}{13}{section.2.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {3}Descripción de los datos}{14}{chapter.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}Descripción y Exploración de los Datos}{14}{chapter.3}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {3.1}Introducción a las bases de datos dermatológicas}{14}{section.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}Base de datos SLICE-3D (ISIC 2024 Challenge Dataset)}{14}{section.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}Descripción general}{14}{subsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.2}Tipos de imágenes}{15}{subsection.3.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.3}Metadatos clínicos disponibles}{15}{subsection.3.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.3}Base de datos ISIC Archive}{16}{section.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Descripción general}{16}{subsection.3.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}Tipos de imágenes}{16}{subsection.3.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.3}Metadatos clínicos disponibles}{16}{subsection.3.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.4}Diferencias respecto a SLICE-3D}{16}{subsection.3.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.4}Otras fuentes de datos consideradas}{16}{section.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4.1}HAM10000}{16}{subsection.3.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.5}Análisis del desbalanceo de clases}{17}{section.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.6}Distribución de diagnósticos}{17}{section.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.7}Heterogeneidad entre fuentes de datos}{17}{section.3.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.8}Análisis de variables y selección de metadatos}{18}{section.3.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8.1}Variables demográficas y clínicas básicas (Plan A)}{18}{subsection.3.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8.2}Variables de morfología avanzada TBP-LV (Plan B)}{18}{subsection.3.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8.3}Identificación de variables de riesgo: Target Leakage y Bias}{18}{subsection.3.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.9}Identificadores clínicos y prevención de \textit  {data leakage}}{18}{section.3.9}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.10}Consideraciones éticas y de uso de datos}{19}{section.3.10}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {4}Metodología}{21}{chapter.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}Adquisición y Estructura del Dataset Original}{14}{section.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}Adquisición mediante \texttt  {isic-cli}}{14}{subsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Estructura y Composición Inicial}{14}{subsection.3.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Diccionario de Variables y Naturaleza de los Datos}{14}{section.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.3}Análisis Exploratorio de Datos (EDA) Original}{15}{section.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.1}Distribución Demográfica}{15}{subsection.3.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3.2}El Desbalanceo Diagnóstico Natural}{15}{subsection.3.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.4}Desarrollo del Script de Auditoría Forense}{16}{section.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Metodología}{17}{chapter.4}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {4.1}Enfoque de la investigación: Sistema de Triaje y Diagnóstico Dual}{21}{section.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.2}Diseño Experimental y Comparativa de Escenarios}{21}{section.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.1}Estudio de impacto de metadatos: Plan A vs. Plan B}{21}{subsection.4.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2.2}Análisis de granularidad diagnóstica: Regímenes de 3 y 4 clases}{21}{subsection.4.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.3}Paradigma de Aprendizaje Multimodal y Complementariedad}{21}{section.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.4}Estrategia de Transferencia de Conocimiento (\textit  {Transfer Learning})}{21}{section.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.5}Metodología de Validación y Robustez}{21}{section.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Prevención de sesgos mediante Partición por Grupos Maestros}{21}{subsection.4.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Validación Cruzada (\textit  {5-fold Cross-Validation})}{21}{subsection.4.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.6}Criterios de Evaluación y Selección del Modelo Óptimo}{21}{section.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.7}Flujo General del Sistema (\textit  {Pipeline} de ejecución)}{21}{section.4.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {5}Entorno de desarrollo y herramientas tecnológicas}{22}{chapter.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}Enfoque de la investigación: Triage Dual (\textit  {Dual-Head})}{17}{section.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Paradigma de Aprendizaje Multimodal}{17}{section.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.3}Armonización Taxonómica: El Sistema de 6 Clases}{17}{section.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.4}Estrategia de Aprendizaje y Transferencia de Conocimiento}{17}{section.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.1}Prevención del Olvido Catastrófico (\textit  {Catastrophic Forgetting})}{17}{subsection.4.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4.2}Protocolo \textit  {Linear Probing} seguido de \textit  {Fine-Tuning} (LP-FT)}{17}{subsection.4.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.5}Metodología de Validación y Robustez}{17}{section.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.1}Aislamiento hermético de pacientes}{17}{subsection.4.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5.2}Validación Cruzada (\textit  {5-fold Cross-Validation})}{17}{subsection.4.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.6}Criterios de Evaluación Clínica}{17}{section.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.7}Flujo General del Sistema (\textit  {Pipeline} de ejecución)}{17}{section.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Entorno de desarrollo y herramientas tecnológicas}{18}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {5.1}Lenguaje de programación}{22}{section.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.2}Framework principal de Deep Learning: PyTorch}{23}{section.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Justificación de la elección de PyTorch}{23}{subsection.5.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Ecosistema Torchvision y librerías asociadas}{23}{subsection.5.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.3}Herramientas de procesamiento y manipulación de datos}{24}{section.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}NumPy y Pandas}{24}{subsection.5.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Scikit-Learn}{24}{subsection.5.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.4}Librerías de visión por computador}{25}{section.5.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}OpenCV y Pillow (PIL)}{25}{subsection.5.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.5}Librerías de optimización e interpretabilidad}{26}{section.5.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Optimización Bayesiana con Optuna}{26}{subsection.5.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Interpretabilidad visual con pytorch-grad-cam}{26}{subsection.5.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.6}Entorno de ejecución y recursos hardware}{27}{section.5.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6.1}Configuración del entorno local}{27}{subsection.5.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.6.2}Limitaciones de VRAM y paralelización}{27}{subsection.5.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5.7}Reproducibilidad y control de versiones}{28}{section.5.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.1}Fijación de semillas aleatorias (Seed locking)}{28}{subsection.5.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.2}Registro de métricas y \textit  {Logs}}{28}{subsection.5.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Ingeniería y preprocesamiento de los datos}{29}{chapter.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.1}Lenguaje de programación}{18}{section.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.2}Framework principal de Deep Learning: PyTorch}{19}{section.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.1}Justificación de la elección de PyTorch}{19}{subsection.5.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2.2}Ecosistema Torchvision y librerías asociadas}{19}{subsection.5.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.3}Herramientas de procesamiento y manipulación de datos}{20}{section.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.1}NumPy y Pandas}{20}{subsection.5.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3.2}Scikit-Learn}{20}{subsection.5.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.4}Librerías de visión por computador}{21}{section.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4.1}OpenCV y Pillow (PIL)}{21}{subsection.5.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.5}Librerías de optimización e interpretabilidad}{22}{section.5.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.1}Optimización Bayesiana con Optuna}{22}{subsection.5.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.5.2}Interpretabilidad visual con pytorch-grad-cam}{22}{subsection.5.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.6}Entorno de ejecución y recursos hardware}{23}{section.5.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6.1}Configuración del entorno local}{23}{subsection.5.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.6.2}Limitaciones de VRAM y paralelización}{23}{subsection.5.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5.7}Reproducibilidad y control de versiones}{24}{section.5.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.1}Fijación de semillas aleatorias (Seed locking)}{24}{subsection.5.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.7.2}Registro de métricas y \textit  {Logs}}{24}{subsection.5.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Ingeniería y Preprocesamiento de los Datos}{25}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Introducción al preprocesamiento}{29}{section.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Estrategia de fusión de bases de datos}{29}{section.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.3}Armonización de columnas y depuración de variables}{29}{section.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.4}Tratamiento de valores faltantes e imputación}{29}{section.6.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.5}Transformación de variables clínicas}{29}{section.6.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Codificación categórica (One-Hot Encoding)}{29}{subsection.6.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}Normalización numérica}{29}{subsection.6.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.6}Preprocesamiento y generación de ramas visuales}{29}{section.6.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.1}Estandarización de la rama RGB}{29}{subsection.6.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.2}Transformación geométrica: Generación de la rama ARP}{29}{subsection.6.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.7}Estrategia de partición y prevención de \textit  {data leakage}}{29}{section.6.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.1}Identificadores clínicos y el \textit  {Master Group ID}}{29}{subsection.6.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {6.7.2}División de conjuntos de entrenamiento, validación y test}{29}{subsection.6.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {7}Métricas de evaluación y ajuste de umbrales}{30}{chapter.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Introducción al preprocesamiento}{25}{section.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Paso 1: Limpieza de Datos}{25}{section.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.1}Tratamiento de Identificadores y Lógica de \texttt  {master\_id}}{25}{subsection.6.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.2}Análisis de Valores Nulos (NaN) y Taxonomía en Cascada}{26}{subsection.6.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2.3}Verificación de Duplicados}{26}{subsection.6.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.3}Paso 2: Integración de Datos}{27}{section.6.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.1}Análisis del Catálogo Diagnóstico Original}{27}{subsection.6.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.2}Armonización Taxonómica: El Sistema de 6 Clases (Head B)}{27}{subsection.6.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3.3}Arquitectura Dual (\textit  {Dual-Head}) y Triaje Clínico}{28}{subsection.6.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.4}Paso 3: Transformación de Datos}{29}{section.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.1}Estrategia de Imputación de Valores Faltantes}{29}{subsection.6.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.2}Codificación Categórica: \textit  {One-Hot Encoding} (OHE)}{29}{subsection.6.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4.3}Política de Escalado Numérico (Z-Score)}{30}{subsection.6.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.5}Paso 4: Reducción de Datos y Muestreo}{30}{section.6.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.1}Análisis Forense de Sesgos de Adquisición}{30}{subsection.6.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.2}El problema de la "Red Perezosa" y el Efecto \textit  {Clever Hans}}{31}{subsection.6.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5.3}Estrategia de Muestreo Estratificado (227k Imágenes)}{31}{subsection.6.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.6}Preprocesamiento Vectorial de Imágenes (\textit  {Offline})}{32}{section.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.1}Estandarización de la rama RGB}{32}{subsection.6.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6.2}Transformación geométrica: Generación de la rama ARP}{32}{subsection.6.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.7}Partición del Dataset y Estrategia de Evaluación}{32}{section.6.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}Métricas de evaluación y ajuste de umbrales}{33}{chapter.7}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {7.1}Introducción a la evaluación en escenarios de extremo desbalanceo}{30}{section.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}La Matriz de Confusión como base evaluativa}{30}{section.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Formulación binaria (Cabeza A: Triage Clínico)}{30}{subsection.7.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.2}Formulación multiclase (Cabeza B: Diagnóstico Diferencial)}{30}{subsection.7.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.3}Métricas de evaluación deterministas}{30}{section.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.1}La trampa de la Exactitud (\textit  {Accuracy}) en imagen médica}{30}{subsection.7.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.2}Sensibilidad (\textit  {Recall}): La métrica prioritaria}{30}{subsection.7.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.3}Especificidad y Precisión}{30}{subsection.7.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.4}Métricas agregadas y de promediado}{30}{section.7.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.1}El \textit  {F1-Score} como medida de equilibrio}{30}{subsection.7.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.2}Estrategias de promediado: \textit  {Micro} vs. \textit  {Macro F1-Score}}{30}{subsection.7.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.5}Evaluación probabilística de la red}{30}{section.7.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5.1}Curva ROC (\textit  {Receiver Operating Characteristic})}{30}{subsection.7.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {7.5.2}Área Bajo la Curva (AUC) como medida de separabilidad}{30}{subsection.7.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.6}Ajuste del Umbral de Decisión y Factor de Seguridad Clínico}{30}{section.7.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.7}Justificación clínica de la estrategia de evaluación final}{30}{section.7.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {8}Diseño de la Red Implementada}{31}{chapter.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}Introducción a la evaluación en escenarios de extremo desbalanceo}{33}{section.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}La Matriz de Confusión como base evaluativa}{33}{section.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.1}Formulación binaria (Cabeza A: Triage Clínico)}{33}{subsection.7.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2.2}Formulación multiclase (Cabeza B: Diagnóstico Diferencial)}{33}{subsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.3}Métricas de evaluación deterministas}{33}{section.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.1}La trampa de la Exactitud (\textit  {Accuracy}) en imagen médica}{33}{subsection.7.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.2}Sensibilidad (\textit  {Recall}): La métrica prioritaria}{33}{subsection.7.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.3.3}Especificidad y Precisión}{33}{subsection.7.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.4}Métricas agregadas y de promediado}{33}{section.7.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.1}El \textit  {F1-Score} como medida de equilibrio}{33}{subsection.7.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.4.2}Estrategias de promediado: \textit  {Micro} vs. \textit  {Macro F1-Score}}{33}{subsection.7.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.5}Evaluación probabilística de la red}{33}{section.7.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5.1}Curva ROC (\textit  {Receiver Operating Characteristic})}{33}{subsection.7.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.5.2}Área Bajo la Curva (AUC) como medida de separabilidad}{33}{subsection.7.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.6}Ajuste del Umbral de Decisión y Factor de Seguridad Clínico}{33}{section.7.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.7}Justificación clínica de la estrategia de evaluación final}{33}{section.7.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {8}Diseño de la Red Implementada}{34}{chapter.8}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {8.1}Arquitectura Global del Sistema de Fusión Triple}{31}{section.8.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.2}Rama Visual Híbrida: Extractor RGB (CNN-ViT)}{31}{section.8.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2.1}Módulo Convolucional: ResNet18 como extractor de rasgos locales}{31}{subsection.8.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.2.2}Módulo de Atención: Vision Transformer para relaciones globales}{31}{subsection.8.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.3}Rama de Análisis Estructural: Red Convolucional ARP}{31}{section.8.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.4}Rama de Percepción Clínica: Perceptrón Multicapa (MLP)}{31}{section.8.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.5}Integración y Toma de Decisión: \textit  {Late Fusion}}{31}{section.8.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.1}Topología de las Cabezas de Decisión (Dual-Head)}{31}{subsection.8.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.6}Modelado Matemático del Entrenamiento}{31}{section.8.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.6.1}Optimización frente al desbalanceo: \textit  {Focal Loss}}{31}{subsection.8.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.6.2}Función de pérdida combinada y ponderación de tareas}{31}{subsection.8.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.7}Tácticas de Entrenamiento Avanzado}{31}{section.8.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.1}Protocolo \textit  {Linear Probing} y \textit  {Fine-Tuning} global}{31}{subsection.8.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.2}Aprendizaje Jerárquico mediante \textit  {Differential Learning Rate}}{31}{subsection.8.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.3}Regularización por \textit  {Modality Dropout}}{31}{subsection.8.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.4}Gestión de memoria y \textit  {Gradient Accumulation}}{31}{subsection.8.7.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8.8}Optimización Bayesiana de Hiperparámetros (Optuna)}{31}{section.8.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {9}Evaluación, resultados y discusión}{32}{chapter.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.1}Arquitectura Global del Sistema de Fusión Triple}{35}{section.8.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.2}Rama 1: Percepción Clínica (Metadatos MLP)}{35}{section.8.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2.1}Topología del Perceptrón Multicapa Compartido}{35}{subsection.8.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.2.2}Optimización Bayesiana (Optuna)}{35}{subsection.8.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.3}Rama 2: Análisis Estructural (CNN ARP)}{35}{section.8.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.1}Arquitectura Convolucional Personalizada}{35}{subsection.8.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.3.2}Sintonización de Hiperparámetros (Optuna)}{35}{subsection.8.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.4}Rama 3: Percepción Visual Híbrida (RGB)}{35}{section.8.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4.1}Extracción de rasgos locales: ResNet18}{35}{subsection.8.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4.2}Modelado de relaciones globales: Vision Transformer (ViT)}{35}{subsection.8.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.4.3}Sintonización de Hiperparámetros (Optuna)}{35}{subsection.8.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.5}Integración y Toma de Decisión (\textit  {Late Fusion})}{35}{section.8.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.1}Concatenación de tensores multimodales}{35}{subsection.8.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.5.2}Topología de las Cabezas de Decisión (\textit  {Dual-Head})}{35}{subsection.8.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.6}Modelado Matemático del Entrenamiento Combinado}{35}{section.8.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6.1}Funciones de pérdida asimétricas e híbridas}{35}{subsection.8.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.6.2}Aprendizaje Jerárquico mediante \textit  {Differential Learning Rates}}{35}{subsection.8.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {8.7}Tácticas de Optimización y Rendimiento de Hardware}{35}{section.8.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.1}Regularización por \textit  {Modality Dropout}}{35}{subsection.8.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.2}Prevención de \textit  {GPU Starvation}: \textit  {Prefetch} y Múltiples \textit  {Workers}}{35}{subsection.8.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {8.7.3}Escalado de memoria: \textit  {Gradient Accumulation} y \textit  {Mixed Precision} (AMP)}{35}{subsection.8.7.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {9}Evaluación, resultados y discusión}{36}{chapter.9}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {9.1}Configuración experimental}{32}{section.9.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.2}Resultados obtenidos}{32}{section.9.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.3}Comparativa entre configuraciones}{32}{section.9.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.4}Impacto de la fusión multimodal}{32}{section.9.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.5}Impacto del desbalanceo}{32}{section.9.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.6}Discusión de resultados}{32}{section.9.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {9.7}Limitaciones del estudio}{32}{section.9.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {10}Conclusiones y trabajo futuro}{33}{chapter.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.1}Configuración experimental}{36}{section.9.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.2}Resultados obtenidos}{36}{section.9.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.3}Comparativa entre configuraciones}{36}{section.9.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.4}Impacto de la fusión multimodal}{36}{section.9.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.5}Impacto del desbalanceo}{36}{section.9.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.6}Discusión de resultados}{36}{section.9.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {9.7}Limitaciones del estudio}{36}{section.9.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {10}Conclusiones y trabajo futuro}{37}{chapter.10}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {10.1}Conclusiones generales}{33}{section.10.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.2}Contribuciones del trabajo}{33}{section.10.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {10.3}Líneas futuras de investigación}{33}{section.10.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {A}Anexos}{34}{appendix.Alph1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.1}Conclusiones generales}{37}{section.10.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.2}Contribuciones del trabajo}{37}{section.10.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10.3}Líneas futuras de investigación}{37}{section.10.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Anexos}{38}{appendix.Alph1}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {A.1}Arquitecturas completas}{34}{section.Alph1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {A.2}Hiperparámetros}{34}{section.Alph1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {A.3}Diagramas adicionales}{34}{section.Alph1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A.1}Arquitecturas completas}{38}{section.Alph1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A.2}Hiperparámetros}{38}{section.Alph1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {A.3}Diagramas adicionales}{38}{section.Alph1.3}\protected@file@percent }
 \abx@aux@read@bbl@mdfivesum{5D0D039BF84E4F45A7144D280F172F5D}
-\gdef \@abspage@last{35}
+\gdef \@abspage@last{39}

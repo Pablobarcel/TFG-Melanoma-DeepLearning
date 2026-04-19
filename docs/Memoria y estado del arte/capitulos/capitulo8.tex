@@ -1,37 +1,41 @@
-% --- Capítulo 8: Diseño de la red implementada ---
+% ==========================================================
+% --- Capítulo 8: Diseño de la Red Implementada ---
+% ==========================================================
 \chapter{Diseño de la Red Implementada}
 
 \section{Arquitectura Global del Sistema de Fusión Triple}
-% Descripción del "Jefe Final": cómo las tres ramas se integran en un único grafo computacional.
+% Visión general del grafo computacional: ramas independientes y su fusión final (Late Fusion).
 
-\section{Rama Visual Híbrida: Extractor RGB (CNN-ViT)}
-\subsection{Módulo Convolucional: ResNet18 como extractor de rasgos locales}
-\subsection{Módulo de Atención: Vision Transformer para relaciones globales}
+\section{Rama 1: Percepción Clínica (Metadatos MLP)}
+\subsection{Topología del Perceptrón Multicapa Compartido}
+% Extractor de 13 -> 128 -> 64 dimensiones con Batch Norm y GELU.
+\subsection{Optimización Bayesiana (Optuna)}
+% Búsqueda del mejor LR, Weight Decay, Loss Type. Explicar por qué Optuna eligió Weighted CE frente a Focal Loss empíricamente.
 
-\section{Rama de Análisis Estructural: Red Convolucional ARP}
-% Diseño de la CNN específica para procesar proyecciones polares y bordes de la lesión.
+\section{Rama 2: Análisis Estructural (CNN ARP)}
+\subsection{Arquitectura Convolucional Personalizada}
+% Detalle de las capas convolucionales creadas desde cero.
+\subsection{Sintonización de Hiperparámetros (Optuna)}
 
-\section{Rama de Percepción Clínica: Perceptrón Multicapa (MLP)}
-% Implementación de la red para los Planes A y B de metadatos.
+\section{Rama 3: Percepción Visual Híbrida (RGB)}
+\subsection{Extracción de rasgos locales: ResNet18}
+\subsection{Modelado de relaciones globales: Vision Transformer (ViT)}
+\subsection{Sintonización de Hiperparámetros (Optuna)}
 
-\section{Integración y Toma de Decisión: \textit{Late Fusion}}
-% La capa de concatenación y el diseño del vector de características de 1280 dimensiones.
-\subsection{Topología de las Cabezas de Decisión (Dual-Head)}
+\section{Integración y Toma de Decisión (\textit{Late Fusion})}
+\subsection{Concatenación de tensores multimodales}
+\subsection{Topología de las Cabezas de Decisión (\textit{Dual-Head})}
+% El diseño final de la capa lineal Binaria (Sigmoid) y Multiclase (Softmax).
 
-\section{Modelado Matemático del Entrenamiento}
-\subsection{Optimización frente al desbalanceo: \textit{Focal Loss}}
-\subsection{Función de pérdida combinada y ponderación de tareas}
+\section{Modelado Matemático del Entrenamiento Combinado}
+\subsection{Funciones de pérdida asimétricas e híbridas}
+% La BCEWithLogitsLoss con factor de castigo para el Head A, y el Weighted CrossEntropy para el Head B.
+\subsection{Aprendizaje Jerárquico mediante \textit{Differential Learning Rates}}
+% Cómo se aplica un LR de /100 al ViT, /10 a la CNN y /1 al Head de clasificación para no destruir los pesos preentrenados.
 
-\section{Tácticas de Entrenamiento Avanzado}
-\subsection{Protocolo \textit{Linear Probing} y \textit{Fine-Tuning} global}
-\subsection{Aprendizaje Jerárquico mediante \textit{Differential Learning Rate}}
-% Explicación de las velocidades /100, /10 y /1 para cada sección de la red.
+\section{Tácticas de Optimización y Rendimiento de Hardware}
 \subsection{Regularización por \textit{Modality Dropout}}
-\subsection{Gestión de memoria y \textit{Gradient Accumulation}}
-% Gradient Accumulation: Explica cómo lograste simular un Batch Size de 128 matemáticamente usando sub-lotes físicos de 32 (que sí cabían en tus 6GB de VRAM), acumulando gradientes en 4 pasos antes de actualizar los pesos.
-
-% Automatic Mixed Precision (AMP): Detalla cómo activaste los Tensor Cores de las gráficas RTX/T4 para calcular en 16 bits (FP16) en lugar de 32 bits (FP32). Explica que esto no solo redujo a la mitad la memoria RAM de vídeo necesaria, sino que aceleró masivamente el cálculo matricial.
-
-% Data Pipeline (Workers y Prefetch): Añade un párrafo explicando cómo, para evitar el GPU Starvation, configuraste el DataLoader explotando al máximo la CPU multihilo (num_workers=4, pin_memory=True y prefetch_factor=4), asegurando que la gráfica siempre tuviera datos listos para procesar.
-\section{Optimización Bayesiana de Hiperparámetros (Optuna)}
-% Espacio de búsqueda y configuración de las pruebas (trials).
+% Apagado aleatorio de ramas enteras para obligar a la red a no depender solo de las imágenes.
+\subsection{Prevención de \textit{GPU Starvation}: \textit{Prefetch} y Múltiples \textit{Workers}}
+\subsection{Escalado de memoria: \textit{Gradient Accumulation} y \textit{Mixed Precision} (AMP)}
+% Cómo se entrenó con lotes virtuales grandes sin saturar la VRAM de la gráfica y usando Tensor Cores en FP16.

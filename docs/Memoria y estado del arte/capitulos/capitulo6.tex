@@ -1,36 +1,187 @@
-
-% --- Capítulo 6: Preprocesamiento de los datos ---
-\chapter{Ingeniería y preprocesamiento de los datos}
+% ==========================================================
+% --- Capítulo 6: Ingeniería y Preprocesamiento de los Datos ---
+% ==========================================================
+\chapter{Ingeniería y Preprocesamiento de los Datos}
 
 \section{Introducción al preprocesamiento}
 
-\section{Estrategia de fusión de bases de datos}
-% Fusión de SLICE-3D y los 27k malignos (Concat y Merge).
+La validez de cualquier sistema de diagnóstico asistido por computadora (\textit{Computer-Aided Diagnosis}) basado en aprendizaje profundo depende, en última instancia, de la integridad y representatividad de los datos de entrenamiento. En dermatología, el desafío es doble: por un lado, existe un desbalance natural entre lesiones benignas y malignas; por otro, la captura de datos médicos suele estar sujeta a variabilidades técnicas que pueden introducir correlaciones espurias o sesgos.
 
-\section{Armonización de columnas y depuración de variables}
-% Eliminación de metadatos trampa y sesgos de IA externa.
+Este capítulo detalla el exhaustivo proceso de ingeniería de datos llevado a cabo, desde la adquisición de la base de datos original hasta la generación de un dataset curado, transformado y particionado para garantizar un entrenamiento robusto y una evaluación exenta de \textit{data leakage}.
 
-\section{Tratamiento de valores faltantes e imputación}
-% Justificación del método de imputación para los metadatos.
+% =========================================================
+\section{Paso 1: Limpieza de Datos}
+% =========================================================
 
-\section{Transformación de variables clínicas}
-\subsection{Codificación categórica (One-Hot Encoding)}
-% Justificar su uso en las variables 'sex' y 'anatom_site_general'.
-\subsection{Normalización numérica}
-% Explicar el uso del escalador (Z-score / StandardScaler) para homogeneizar magnitudes como edad y tamaño.
+La primera fase del preprocesamiento consistió en auditar la completitud de la base de datos original (552\,598 imágenes y 37 columnas), tratar los valores perdidos (\textit{Missing Values}), eliminar redundancias e inconsistencias en la identificación de los pacientes.
 
-\section{Preprocesamiento y generación de ramas visuales}
+\subsection{Tratamiento de Identificadores y Lógica de \texttt{master\_id}}
+El rastreo de los pacientes es un aspecto crítico en el análisis de imágenes médicas para garantizar que las particiones de entrenamiento y evaluación sean completamente independientes (\textit{Patient-Level Split}). Tras realizar la auditoría forense sobre los 552\,598 identificadores de imágenes originales (\texttt{isic\_id}), se detectaron inconsistencias severas en las columnas de seguimiento (\texttt{patient\_id} y \texttt{lesion\_id}):
+
+\begin{itemize}
+	\item \textbf{Registros Completos (14.6\%):} Un total de 80\,612 imágenes poseían simultáneamente \texttt{patient\_id} y \texttt{lesion\_id}. En estos casos, se priorizó el \texttt{patient\_id} como clave principal para agrupar todas las lesiones de un mismo individuo.
+	\item \textbf{Pacientes sin lesión definida (71.5\%):} 395\,154 imágenes presentaban \texttt{patient\_id} pero carecían de \texttt{lesion\_id}. Dado que se conocía al individuo, se utilizó directamente el \texttt{patient\_id} como clave de agrupación.
+	\item \textbf{Lesiones sin paciente asignado (8.2\%):} 45\,249 imágenes tenían \texttt{lesion\_id} pero no \texttt{patient\_id}. En este escenario, la lesión en sí misma se trató como un grupo clínico aislado y se empleó su \texttt{lesion\_id} como clave.
+	\item \textbf{El "Limbo Clínico" (5.7\%):} Se identificaron 31\,583 imágenes (casi el 6\% del dataset) que carecían de ambos identificadores. Ante la imposibilidad de garantizar la trazabilidad de estas muestras y el alto riesgo de provocar fugas de datos (\textit{Data Leakage}) en etapas posteriores, \textbf{estos registros fueron eliminados permanentemente}.
+\end{itemize}
+
+Para unificar esta disparidad en una estructura hermética, se programó la generación de la columna algorítmica \textbf{\texttt{master\_id}}, la cual actúa como la única variable de control para agrupar datos según las reglas de priorización descritas.
+
+\subsection{Análisis de Valores Nulos (NaN) y Taxonomía en Cascada}
+La auditoría también reveló un volumen crítico de valores perdidos en los metadatos. Se observó que múltiples columnas presentaban más del 90\% de nulos (ej., \texttt{mel\_mitotic\_index}: 99.97\%, \texttt{mel\_thick\_mm}: 99.84\%). 
+
+En cuanto a las columnas de diagnóstico principal, se observó que el etiquetado médico seguía una lógica de \textbf{clasificación en cascada}: los facultativos catalogan la lesión desde términos generales a específicos. Al cruzar las columnas \texttt{diagnosis\_1}, \texttt{diagnosis\_2} y \texttt{diagnosis\_3}, se comprobó que si un nivel superior presentaba un valor nulo (NaN) o el término "Indeterminate" (3\,314 casos, un 0.60\% del total), los subniveles descendentes arrastraban ese vacío. 
+
+En consecuencia, los registros con información diagnóstica faltante o clasificados como "Indeterminate" fueron suprimidos para asegurar que la red neuronal solo asimile \textit{Ground Truth} validado clínicamente.
+
+\subsection{Verificación de Duplicados}
+Finalmente, se ejecutó una comprobación automatizada sobre el subconjunto restante. El análisis de integridad certificó que existían \textbf{0 filas idénticas} en su totalidad y \textbf{0 identificadores de imagen duplicados}, asegurando que ninguna muestra inflaría artificialmente el rendimiento del modelo durante el entrenamiento.
+
+% =========================================================
+\section{Paso 2: Integración de Datos}
+% =========================================================
+
+La integración de datos implicó armonizar la inmensa disparidad de nomenclaturas patológicas del dataset original para diseñar un sistema objetivo, clínicamente coherente y viable para el aprendizaje profundo multitarea.
+
+\subsection{Análisis del Catálogo Diagnóstico Original}
+La auditoría del dataset reveló que la clasificación original estaba fragmentada en cinco niveles de profundidad (\texttt{diagnosis\_1} a \texttt{diagnosis\_5}). 
+\begin{itemize}
+	\item El nivel \texttt{diagnosis\_1} ofrecía una visión puramente binaria (90.96\% Benigno, 4.91\% Maligno).
+	\item El nivel \texttt{diagnosis\_2} separaba por linaje celular (ej. proliferaciones melanocíticas frente a epiteliales).
+	\item Los niveles \texttt{diagnosis\_3}, \texttt{diagnosis\_4} y \texttt{diagnosis\_5} contenían un catálogo exhaustivo con docenas de patologías y sus respectivos subtipos histopatológicos (ej. Melanoma in situ, Melanoma nodular, Nevus de Spitz, Nevus displásico, etc.).
+\end{itemize}
+
+Entrenar una red neuronal para predecir docenas de subtipos histológicos (como diferenciar un Nevus de Clark de un Nevus de Reed) a partir de imágenes macroscópicas es clínicamente inviable e introduce un ruido matemático severo debido a la escasez de muestras en las clases minoritarias. Por tanto, se hizo imprescindible un proceso de fusión de clases (\textit{Class Mapping}).
+
+\subsection{Armonización Taxonómica: El Sistema de 6 Clases (Head B)}
+Se analizaron todas las subcategorías y se agruparon en 6 clases maestras basándose en su comportamiento biológico, su apariencia visual y la decisión clínica subyacente. Esta agrupación define la salida multiclase del modelo (\textbf{Head B}):
+
+\begin{enumerate}
+	\item \textbf{[0] Nevus (NV) -- 37\,197 muestras:} 
+	Se agruparon aquí todas las proliferaciones melanocíticas benignas. Esto incluye el término genérico "Nevus" así como todos sus subtipos descritos en los niveles 4 y 5 (\textit{Nevus displásico, atípico, de Spitz, de Reed, dérmico, congénito, etc.}). \textbf{Justificación clínica:} Independientemente de su subtipo histológico, todos los nevus son lunares benignos cuyo manejo clínico es la simple observación rutinaria.
+	
+	\item \textbf{[1] Melanoma (MEL) -- 10\,245 muestras:}
+	Se fusionaron todos los estadios y variantes del cáncer melanocítico (\textit{Melanoma in situ, invasivo, lentigo maligno, diseminación superficial, nodular, etc.}). \textbf{Justificación clínica:} El melanoma es el cáncer de piel con mayor tasa de mortalidad. Agrupar todas sus variantes asegura que el modelo disponga del mayor volumen de datos posible para aprender a detectar cualquier morfología que requiera escisión quirúrgica urgente.
+	
+	\item \textbf{[2] Carcinoma Basocelular (BCC) -- 12\,195 muestras:}
+	Agrupa los carcinomas basocelulares (\textit{nodular, superficial, infiltrante, esclerosante}). \textbf{Justificación clínica:} Es el cáncer de piel no melanocítico (NMSC) más común. Posee un perfil visual muy distinto al melanoma (apariencia perlada, telangiectasias), por lo que debe ser una clase independiente.
+	
+	\item \textbf{[3] Carcinoma Espinocelular (SCC) -- 3\,018 muestras:}
+	Incluye los carcinomas de células escamosas (\textit{in situ, invasivo, enfermedad de Bowen}) y el queratoacantoma. \textbf{Justificación clínica:} Al igual que el BCC, es un cáncer queratinocítico, pero con mayor potencial de metástasis, requiriendo un manejo terapéutico diferenciado.
+	
+	\item \textbf{[4] Queratosis Benignas (BKL) -- 6\,194 muestras:}
+	Esta clase es de vital importancia algorítmica. Agrupa las queratosis seborreicas, los lentigos solares y las queratosis liquenoides. \textbf{Justificación clínica:} Estas lesiones benignas son los grandes "imitadores" del melanoma. Suelen ser oscuras, asimétricas y con bordes irregulares, siendo la causa principal de falsos positivos en la práctica clínica. Aislar estas patologías en una clase propia obliga a la red neuronal a aprender específicamente las sutilezas visuales que las diferencian de un melanoma real.
+	
+	\item \textbf{[5] Benigno Genérico (BG) -- 156\,087 muestras:}
+	Esta clase actúa como un "cajón de sastre" para el resto de afecciones cutáneas inocuas no melanocíticas (\textit{Dermatofibromas, hemangiomas, cicatrices, verrugas, quistes, pólipos, etc.}). \textbf{Justificación clínica:} Estas lesiones presentan morfologías muy variadas pero comparten el mismo desenlace médico: no representan peligro para el paciente. Poseen muy pocas muestras individuales para conformar sus propias clases sin generar un desbalance extremo, por lo que su agrupación es la solución matemática óptima.
+\end{enumerate}
+
+\subsection{Arquitectura Dual (\textit{Dual-Head}) y Triaje Clínico}
+Para maximizar la utilidad médica del sistema, se configuró una arquitectura de red con dos ramas de decisión simultáneas (\textit{Multi-task Learning}):
+
+\begin{itemize}
+	\item \textbf{Head A (Clasificación Binaria de Riesgo):}
+	Su función es realizar un triaje primario simulando la decisión crítica de un médico generalista: \textit{¿Es peligroso o no?}. Para ello, mapea internamente las 6 clases en dos grupos absolutos:
+	\begin{itemize}
+		\item \textbf{Maligno (Etiqueta 1):} Engloba las clases 1 (MEL), 2 (BCC) y 3 (SCC).
+		\item \textbf{Benigno (Etiqueta 0):} Engloba las clases 0 (NV), 4 (BKL) y 5 (BG).
+	\end{itemize}
+	Esta cabeza se entrena con una función de pérdida fuertemente penalizada para evitar los falsos negativos (no dejar pasar ningún cáncer).
+	
+	\item \textbf{Head B (Clasificación Diagnóstica Multiclase):}
+	Su función simula la evaluación de un dermatólogo especialista, intentando predecir la patología exacta entre las 6 clases maestras (0 a 5) descritas anteriormente.
+\end{itemize}
+
+El entrenamiento conjunto de ambas cabezas permite que la red extraiga características más robustas, forzando al modelo a aprender primero la gravedad subyacente de la lesión antes de especificar su diagnóstico exacto.
+
+% =========================================================
+\section{Paso 3: Transformación de Datos}
+% =========================================================
+
+La fase de transformación tuvo como objetivo adecuar matemáticamente los datos tabulares para su ingesta por parte de la red neuronal (Perceptrón Multicapa), garantizando que las representaciones numéricas no introdujeran suposiciones falsas ni sesgos artificiales.
+
+\subsection{Estrategia de Imputación de Valores Faltantes}
+En el procesamiento tradicional de datos, es común recurrir a técnicas de imputación estadística como la sustitución por la media (para números) o por la moda (para categorías). Sin embargo, en un contexto médico, inventar datos clínicos asumiendo que un valor faltante corresponde al paciente "promedio" supone un riesgo inaceptable y altera la distribución real de la población. Por ello, se adoptaron técnicas de \textbf{imputación explícita de ausencia}:
+
+\begin{itemize}
+	\item \textbf{Variables Numéricas (\texttt{age\_approx}): Imputación por Valor Centinela.} \\
+	En lugar de rellenar las edades faltantes con la edad media del dataset (lo cual crearía un pico artificial en la distribución de edades y engañaría al modelo), se imputó el valor \textbf{\texttt{-1.0}}. Este valor actúa como un "centinela" o ancla fuera de la distribución natural. Al introducir este valor extremo, la red neuronal aprende que el \texttt{-1.0} no representa a un paciente que no ha nacido, sino que representa un patrón matemático distinto: la \textit{ausencia de información}. Esto permite al modelo ajustar sus pesos para tomar decisiones basándose en el resto de variables cuando la edad es desconocida, sin ser engañado por una edad media ficticia.
+	
+	\item \textbf{Variables Categóricas (\texttt{sex}, \texttt{anatom\_site\_general}): Categoría \texttt{unknown}.} \\
+	Del mismo modo, imputar un sexo faltante con la moda (por ejemplo, "masculino" si es la clase mayoritaria) introduce un sesgo de género directo en el paciente. La técnica óptima empleada fue crear e imputar la etiqueta explícita \textbf{\texttt{unknown}}. Al tratar la falta de datos como una categoría válida y separada, se respeta la incertidumbre clínica real y el modelo aprende a calibrar sus predicciones cuando ignora la localización anatómica o el sexo del individuo.
+\end{itemize}
+
+\subsection{Codificación Categórica: \textit{One-Hot Encoding} (OHE)}
+Las redes neuronales solo comprenden vectores numéricos. Una práctica ineficiente (y a menudo errónea) es aplicar \textit{Label Encoding}, que asigna un número entero a cada categoría (ej. Cabeza = 1, Torso = 2, Piernas = 3). Hacer esto forzaría a la red a asumir una relación ordinal falsa, implicando matemáticamente que las Piernas valen "más" o son "tres veces la Cabeza", lo cual es un absurdo anatómico y biológico.
+
+Para resolver esto, se aplicó la técnica de \textbf{\textit{One-Hot Encoding} (OHE)}. Esta transformación toma cada variable categórica y genera tantas columnas nuevas como valores únicos existan. A cada fila se le asigna un $1$ en la columna correspondiente y un $0$ en el resto. 
+
+\textbf{Ventajas de usar OHE frente a no usarlo:}
+\begin{enumerate}
+	\item \textbf{Ortogonalidad matemática:} Garantiza que todas las categorías sean equidistantes e independientes entre sí en el espacio vectorial. Ninguna ubicación anatómica ni sexo tiene un peso numérico superior inherente.
+	\item \textbf{Activación de pesos independiente:} Permite a la red neuronal (a través de los parámetros del Perceptrón Multicapa) aprender un peso ($w$) y un sesgo ($b$) completamente aislado para el "torso" frente a la "cabeza", mejorando significativamente la interpretabilidad y el rendimiento del triaje.
+\end{enumerate}
+
+\subsection{Política de Escalado Numérico (Z-Score)}
+Para que la red neuronal converja correctamente y los gradientes no se desestabilicen, las variables numéricas (como la edad) deben ser estandarizadas mediante normalización \textit{Z-score} ($z = \frac{x - \mu}{\sigma}$).
+
+Sin embargo, se determinó metodológicamente que esta normalización \textbf{no debe realizarse de forma global} (\textit{offline}) sobre la totalidad del dataset antes de la partición. Si se calculara la media ($\mu$) y la desviación estándar ($\sigma$) usando todos los datos, la información de las edades del conjunto de prueba (\textit{Test Set}) "contaminaría" el conjunto de entrenamiento, incurriendo en un sutil pero peligroso \textit{Data Leakage}. 
+
+Por consiguiente, el escalado se difirió a la etapa de entrenamiento: el \textit{Z-score} se calcula y se aplica dinámicamente, extrayendo la media y la desviación estándar de forma estricta y exclusiva del subconjunto de entrenamiento correspondiente a cada \textit{fold} de la validación cruzada.
+
+% =========================================================
+\section{Paso 4: Reducción de Datos y Muestreo}
+% =========================================================
+
+\subsection{Análisis Forense de Sesgos de Adquisición}
+Para garantizar la capacidad de generalización del modelo, se realizó un análisis cruzado entre todos los metadatos y las etiquetas diagnósticas buscando correlaciones espurias. El hallazgo más crítico de la auditoría fue el descubrimiento de un severo \textbf{sesgo instrumental} ligado a la variable \texttt{image\_type} (tipo de fotografía). 
+
+La base de datos original (552\,598 imágenes) presentaba la siguiente distribución instrumental:
+\begin{itemize}
+	\item \textbf{Fotografía de cuerpo entero (\textit{TBP tile: close-up}):} 401\,059 imágenes. De estas, el \textbf{99.9\% (400\,552)} eran lesiones benignas, y apenas un 0.1\% (393) eran malignas.
+	\item \textbf{Dermatoscopía digital (\textit{dermoscopic}):} 124\,752 imágenes. Aquí se concentraba la gran mayoría de los cánceres, con \textbf{21\,620 lesiones malignas} (17.3\%) frente a 98\,745 benignas (79.2\%).
+	\item \textbf{Fotografía clínica macroscópica (\textit{clinical: close-up}):} 9\,316 imágenes, con una altísima prevalencia de malignidad (4\,787 malignas, 51.4\%).
+\end{itemize}
+
+\subsection{El problema de la "Red Perezosa" y el Efecto \textit{Clever Hans}}
+Las imágenes dermatoscópicas presentan artefactos visuales muy característicos, como bordes negros circulares, esquinas oscurecidas o marcas de gel de inmersión, ausentes en las fotografías TBP. Si la red neuronal se entrenase con la distribución original en bruto, se convertiría en una \textbf{"red perezosa"} (\textit{lazy network}). En lugar de aprender los intrincados patrones morfológicos del cáncer (asimetría, bordes, estructuras reticulares), la red optimizaría su función de pérdida aprendiendo a distinguir el tipo de cámara: si detecta un borde negro (dermatoscopio) sube la probabilidad de malignidad, y si ve piel limpia (TBP) asume que es benigno.
+
+Este fenómeno, conocido como el \textbf{efecto \textit{Clever Hans}}, ya fue corroborado en iteraciones previas de modelos dermatológicos. Al aplicar técnicas de interpretabilidad visual como \textbf{Grad-CAM} (Mapas de Activación de Clase ponderados por Gradiente), se observó empíricamente que los mapas de calor (\textit{heatmaps}) de la red no se centraban en la lesión cutánea, sino que se activaban intensamente en las esquinas negras del dermatoscopio. 
+
+Una posible solución técnica sería aplicar un \textit{Data Augmentation} extremadamente agresivo (recortes severos, enmascaramiento de bordes, transformaciones elásticas extremas) para destruir los artefactos del dermatoscopio. Sin embargo, esta es una solución destructiva que elimina el contexto periférico de la lesión y altera la escala real de los lunares. La solución metodológicamente correcta debe aplicarse en la raíz: el balanceo representativo de los datos.
+
+\subsection{Estrategia de Muestreo Estratificado (227k Imágenes)}
+Para forzar al modelo a extraer características intrínsecas de las lesiones, es imperativo mostrarle tanto ejemplos benignos como malignos procedentes de todos los dominios instrumentales. En lugar de utilizar exclusivamente imágenes dermatoscópicas (lo que limitaría el modelo a un solo tipo de hardware), se diseñó un muestreo estratégico para conformar un corpus robusto de aproximadamente \textbf{227\,000 imágenes}:
+
+\begin{enumerate}
+	\item \textbf{Bloque Dermatoscópico (Homogeneidad de dominio):} Se seleccionaron $\sim$20\,000 imágenes malignas dermatoscópicas (prácticamente la totalidad disponible). Para balancear este dominio, se emparejaron con $\sim$86\,000 imágenes benignas tomadas exactamente con el mismo tipo de dermatoscopio. Así, la red aprende que el borde negro no es sinónimo de cáncer.
+	
+	\item \textbf{Bloque TBP/Clínico (Compensación y Diversidad):} Dado que la tecnología TBP representa el futuro del cribado dermatológico, se retuvo un volumen masivo de $\sim$110\,000 imágenes benignas de este formato. Para evitar que la red asocie TBP exclusivamente a benignidad, se inyectó la totalidad de las $\sim$7\,000 imágenes malignas restantes procedentes de fotografías clínicas y TBP.
+\end{enumerate}
+
+Esta técnica de reducción y balanceo garantiza un conjunto de datos \textbf{agnóstico al dispositivo de captura}. Una vez completado este muestreo, la columna \texttt{image\_type} fue eliminada definitivamente del archivo de metadatos, garantizando que el algoritmo carezca de atajos matemáticos y se vea obligado a basar sus predicciones diagnósticas única y exclusivamente en la morfología de la lesión y la fisiología del paciente.
+
+% =========================================================
+\section{Preprocesamiento Vectorial de Imágenes (\textit{Offline})}
+% =========================================================
 \subsection{Estandarización de la rama RGB}
 % Redimensionamiento, normalización de tensores y gestión de formatos. Explica que, en las primeras pruebas, el enfoque Online (redimensionar sobre la marcha en cada época usando interpolaciones complejas como Lanczos) generaba un cuello de botella grave de entrada/salida (I/O Bottleneck) y un uso de CPU del 100%, dejando a la GPU inactiva (CPU Starvation).
 
 % Detalla tu solución: Crear un pipeline de preprocesamiento Offline que redimensiona todo el corpus de 200.000 imágenes a 224x224 previamente.
 
-Menciona cómo esto redujo drásticamente el peso del dataset en disco y permitió que las transformaciones Online se limitaran únicamente a operaciones de bajo coste (giros, brillos), disparando la velocidad de lectura.
+% Menciona cómo esto redujo drásticamente el peso del dataset en disco y permitió que las transformaciones Online se limitaran únicamente a operaciones de bajo coste (giros, brillos), disparando la velocidad de lectura.
+
 \subsection{Transformación geométrica: Generación de la rama ARP}
 % Explicar el proceso algorítmico para convertir la imagen RGB a coordenadas polares (Angular Radial Partitioning).
 
-\section{Estrategia de partición y prevención de \textit{data leakage}}
-\subsection{Identificadores clínicos y el \textit{Master Group ID}}
-% Explicar la jerarquía de IDs y cómo se unificaron pacientes huérfanos y lesiones para evitar el Patient Leakage.
-\subsection{División de conjuntos de entrenamiento, validación y test}
-% Explicar cómo el Master Group ID permitió hacer un 'split' honesto, generando los CSV finales (training_with_paths.csv y test_with_paths.csv) listos para la red neuronal.
+% =========================================================
+\section{Partición del Dataset y Estrategia de Evaluación}
+% =========================================================
+
+La fase final del preprocesamiento fue la división del dataset en una proporción 85/15:
+\begin{itemize}
+	\item \textbf{Test Set (15\%):} Un conjunto ciego de pacientes extraído mediante \textbf{\texttt{GroupShuffleSplit}} basado en el \texttt{master\_id}. Esto asegura que todas las imágenes de un mismo paciente estén exclusivamente en un conjunto, imposibilitando que el modelo memorice características individuales de la piel.
+	\item \textbf{Training/Val Set (85\%):} Destinado al desarrollo del modelo, donde se aplicará una técnica de \textbf{\texttt{StratifiedGroupKFold}} para la validación cruzada.
+\end{itemize}
+
+Tras este proceso, las columnas finales que alimentarán el sistema son: \texttt{isic\_id}, \texttt{patient\_id}, \texttt{lesion\_id}, \texttt{master\_id}, \texttt{age\_approx}, \texttt{target}, y las variantes vectorizadas de \texttt{sex} y \texttt{anatom\_site\_general}.

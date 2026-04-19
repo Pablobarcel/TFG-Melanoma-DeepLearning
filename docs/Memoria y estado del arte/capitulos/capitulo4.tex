@@ -1,30 +1,34 @@
+% ==========================================================
 % --- Capítulo 4: Metodología ---
+%===========================================================
 \chapter{Metodología}
 
-\section{Enfoque de la investigación: Sistema de Triaje y Diagnóstico Dual}
-% Explica la filosofía: un modelo que simula el flujo hospitalario (¿Es urgente? -> ¿Qué es?).
+\section{Enfoque de la investigación: Triage Dual (\textit{Dual-Head})}
+% Filosofía del modelo simulando el flujo hospitalario: Alerta binaria (Head A: ¿Es urgente?) y Diagnóstico diferencial (Head B: ¿Qué patología exacta es?).
 
-\section{Diseño Experimental y Comparativa de Escenarios}
-\subsection{Estudio de impacto de metadatos: Plan A vs. Plan B}
-% Metodología para medir si la tecnología TBP realmente aporta valor frente a la clínica básica.
-\subsection{Análisis de granularidad diagnóstica: Regímenes de 3 y 4 clases}
-% Justificación de por qué probar ambos enfoques para encontrar el equilibrio entre precisión y utilidad clínica.
+\section{Paradigma de Aprendizaje Multimodal}
+% Justificación científica de por qué la suma de tres modalidades reduce la incertidumbre:
+% 1. RGB: Textura y color.
+% 2. ARP: Topología estructural y geometría de bordes.
+% 3. Tabular (Metadatos): Contexto clínico y demográfico.
 
-\section{Paradigma de Aprendizaje Multimodal y Complementariedad}
-% Justificación científica de por qué la suma de RGB (textura), ARP (estructura) y TBP (clínica) 
-% reduce la incertidumbre del modelo.
+\section{Armonización Taxonómica: El Sistema de 6 Clases}
+% Justificación clínica de pasar de decenas de subtipos histológicos a 6 clases maestras (NV, MEL, BCC, SCC, BKL, BG), agrupando por comportamiento biológico y manejo terapéutico.
 
-\section{Estrategia de Transferencia de Conocimiento (\textit{Transfer Learning})}
-% Justificación del uso de pesos preentrenados y la metodología para evitar el "Olvido Catastrófico".
+\section{Estrategia de Aprendizaje y Transferencia de Conocimiento}
+\subsection{Prevención del Olvido Catastrófico (\textit{Catastrophic Forgetting})}
+% Metodología para aprovechar pesos preentrenados (ImageNet/ISIC) sin destruir sus filtros base.
+\subsection{Protocolo \textit{Linear Probing} seguido de \textit{Fine-Tuning} (LP-FT)}
+% Explicar la congelación inicial de las ramas (dejando aprender solo a las cabezas) y el descongelamiento progresivo.
 
 \section{Metodología de Validación y Robustez}
-\subsection{Prevención de sesgos mediante Partición por Grupos Maestros}
-% Lógica de por qué la validación debe ser por paciente/lesión y no por imagen.
+\subsection{Aislamiento hermético de pacientes}
+% Uso del Master Group ID para evitar fugas de datos (Data Leakage) entre entrenamiento y test.
 \subsection{Validación Cruzada (\textit{5-fold Cross-Validation})}
-% Estrategia para asegurar que los resultados no dependan de una partición afortunada de los datos.
+% Justificación estadística para asegurar que el modelo generaliza bien independientemente de la partición.
 
-\section{Criterios de Evaluación y Selección del Modelo Óptimo}
-% Metodología para elegir el "mejor" modelo: ¿Priorizamos el F1-Score, el AUC o la Sensibilidad en Melanoma?
+\section{Criterios de Evaluación Clínica}
+% Selección de métricas: F1-Macro para el diagnóstico multiclase y sensibilidad/AUC para la detección crítica de melanomas en el Head A.
 
 \section{Flujo General del Sistema (\textit{Pipeline} de ejecución)}
 % Diagrama lógico del proceso completo.

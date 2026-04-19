@@ -1,165 +1,61 @@
-% --- Capítulo 3: Descripción de los datos ---
-\chapter{Descripción de los datos}
+% ==========================================================
+% --- Capítulo 3: Descripción y Exploración de los Datos ---
+% ==========================================================
 
-\section{Introducción a las bases de datos dermatológicas}
+% INTRODUCIR GRAFICAS ENSEÑANDO LOS PORCENTAJES, TANTO DE DESBALANCEO, COMO  DISTRIBUCIONES DE DATOS ETC.
 
-El desarrollo de sistemas de diagnóstico asistido por ordenador basados en aprendizaje profundo depende de manera crítica de la calidad, validez y representatividad de las bases de datos empleadas. En el ámbito de la dermatología, y en particular en el estudio del cáncer de piel, esta dependencia es aún más acusada debido a la elevada variabilidad morfológica de las lesiones cutáneas y a la baja prevalencia relativa de los casos malignos en la población general.
+%INVERSTIGAR SOBRE QUE ES UN EDA Y COMO IMPLEMENTARLO CORRECTAMENTE
 
-Para que un modelo de \textit{deep learning} resulte clínicamente relevante, no basta con disponer de un gran volumen de imágenes. Es imprescindible que dichas imágenes estén correctamente anotadas, procedan de fuentes fiables y reflejen de forma razonable la distribución real de las patologías, evitando sesgos sistemáticos que puedan comprometer la capacidad de generalización del sistema. Asimismo, el desbalanceo extremo entre clases, habitual en bases de datos médicas, constituye uno de los principales retos metodológicos, ya que puede conducir a modelos con una alta exactitud global pero una sensibilidad reducida en las clases de mayor interés clínico.
+\chapter{Descripción y Exploración de los Datos}
 
-En este contexto, el presente trabajo se apoya en bases de datos públicas ampliamente utilizadas y validadas por la comunidad científica, que se combinan de forma controlada con el objetivo de construir un conjunto de datos robusto, multimodal y adecuado para el entrenamiento y la evaluación de arquitecturas profundas complejas.
+\section{Adquisición y Estructura del Dataset Original}
 
+\subsection{Adquisición mediante \texttt{isic-cli}}
+La base de datos original se obtuvo del repositorio de la \textbf{International Skin Imaging Collaboration (ISIC)}. Debido al volumen masivo de información, se utilizó la herramienta oficial de línea de comandos \textbf{\texttt{isic-cli}}. Este método permitió una descarga estructurada y eficiente de las imágenes y su información asociada, garantizando la integridad de los archivos mediante protocolos de transferencia seguros.
 
-\section{Base de datos SLICE-3D (ISIC 2024 Challenge Dataset)}
-
-\subsection{Descripción general}
-
-La principal fuente de datos del presente estudio es la base de datos \textit{SLICE-3D}, proporcionada en el marco del \textit{ISIC 2024 Challenge Dataset}. Este conjunto de datos está compuesto por un total de 401\,059 imágenes en formato JPEG, lo que lo convierte en una de las colecciones públicas más extensas disponibles actualmente para el análisis automatizado de lesiones cutáneas.
-
-Las imágenes incluidas en SLICE-3D han sido recopiladas y anotadas siguiendo protocolos estandarizados, lo que garantiza un alto grado de consistencia y fiabilidad en las etiquetas diagnósticas asociadas. No obstante, al igual que ocurre en la práctica clínica real, la distribución de diagnósticos presenta un desbalanceo muy acusado, con una clara predominancia de lesiones benignas frente a un número considerablemente menor de casos malignos.
-
-En concreto, el conjunto de datos contiene del orden de 400\,000 lesiones benignas, mientras que el número de imágenes correspondientes a lesiones malignas es significativamente inferior, representando únicamente un pequeño porcentaje del total. Este desbalanceo refleja fielmente la epidemiología del cáncer de piel, pero introduce importantes desafíos para el entrenamiento de modelos de clasificación basados en \textit{deep learning}, especialmente en términos de sensibilidad y capacidad de detección de las clases minoritarias.
-
-\subsection{Tipos de imágenes}
-
-Las imágenes de SLICE-3D proceden principalmente de sistemas de dermatoscopía digital y de plataformas de \textit{Total Body Photography} (TBP), proporcionando imágenes de alta resolución centradas en lesiones individuales. La variabilidad en las condiciones de adquisición, los dispositivos empleados y las características visuales (iluminación, enfoque, resolución, contraste, etc.) hace que este conjunto de datos resulte especialmente adecuado para evaluar la robustez de modelos de aprendizaje profundo frente a cambios de dominio y escenarios clínicos heterogéneos.
-
-\subsection{Metadatos clínicos disponibles}
-
-Una característica distintiva de SLICE-3D es la disponibilidad de un conjunto amplio y detallado de metadatos clínicos, que incluye variables demográficas, información anatómica y métricas cuantitativas avanzadas derivadas de TBP (\texttt{TBP-LV}). Entre estos metadatos se encuentran, de forma general:
-
-\begin{itemize}
-	\item variables demográficas básicas (como edad aproximada y sexo del paciente),
-	\item localización anatómica general de la lesión,
-	\item descriptores cuantitativos relacionados con forma, tamaño, color y asimetría de la lesión.
-\end{itemize}
-
-Estos metadatos aportan información complementaria a la imagen cruda que puede resultar de gran valor para la clasificación clínica, especialmente en contextos de cribado (\textit{screening}) o en escenarios en los que la información puramente visual puede resultar ambigua. En el marco del enfoque multimodal propuesto en este trabajo, estas variables constituyen una fuente adicional de evidencia que puede contribuir a mejorar la capacidad discriminativa del modelo.
-
-
-\section{Base de datos ISIC Archive}
-
-\subsection{Descripción general}
-
-La base de datos \textit{ISIC Archive} constituye un repositorio público de gran escala que agrupa un total de 549\,590 imágenes dermatológicas, correspondientes a una amplia variedad de diagnósticos y procedentes de múltiples centros y estudios internacionales.
-
-En el presente trabajo, \textit{ISIC Archive} no se emplea de forma íntegra, sino que se utiliza de manera selectiva y estratégica. Con el objetivo de mitigar el desbalanceo extremo presente en \textit{SLICE-3D}, se seleccionaron 27\,084 imágenes correspondientes exclusivamente a casos malignos, incluyendo melanoma, carcinoma basocelular y carcinoma espinocelular.
-
-Esta selección permite reforzar de forma significativa la representación de las clases malignas en el conjunto de datos global, manteniendo al mismo tiempo la coherencia clínica y la fiabilidad de las etiquetas diagnósticas. De este modo, \textit{ISIC Archive} actúa como una fuente complementaria esencial para equilibrar el conjunto de entrenamiento sin introducir ruido innecesario ni comprometer la validez de los experimentos.
-
-\subsection{Tipos de imágenes}
-
-\subsection{Metadatos clínicos disponibles}
-
-\subsection{Diferencias respecto a SLICE-3D}
-
-Las principales diferencias entre ISIC Archive e ISIC Slice~3D son:
-
-\begin{itemize}
-	\item \textbf{Distribución de clases}: ISIC Archive contiene únicamente lesiones malignas, mientras que Slice~3D incluye mayoritariamente lesiones benignas.
-	\item \textbf{Riqueza de metadatos}: ISIC Archive dispone de un número menor de variables clínicas y descriptivas.
-	\item \textbf{Rol en el estudio}: ISIC Archive se emplea como fuente estratégica para incrementar la presencia de lesiones malignas y reducir el desbalanceo de clases del conjunto global.
-\end{itemize}
-
-Estas diferencias motivan la adopción de estrategias específicas de fusión y tratamiento de datos, que se describirán en capítulos posteriores.
-
-\section{Otras fuentes de datos consideradas}
-
-\subsection{HAM10000}
-
-La base de datos \textit{HAM10000} fue analizada de forma preliminar como posible fuente complementaria. Sin embargo, se decidió no integrarla en la fase principal del estudio debido a diferencias en los criterios de anotación y a la existencia de solapamientos conceptuales con las bases ISIC, que podrían complicar la armonización de datos sin aportar un beneficio proporcional en términos de diversidad o volumen efectivo.
-
-\section{Análisis del desbalanceo de clases}
-
-Uno de los principales retos identificados es el desbalanceo severo entre lesiones benignas y malignas, especialmente en ISIC Archive. Mientras que las lesiones benignas superan ampliamente las 400\,000 muestras, los casos malignos representan una fracción muy reducida del conjunto total.
-
-Este desbalanceo condiciona tanto el diseño del modelo como la selección de métricas de evaluación, haciendo necesario priorizar la sensibilidad y la capacidad de detección de casos malignos frente a la mera exactitud global.
-
-\section{Distribución de diagnósticos}
-
-Con el fin de unificar los diagnósticos heterogéneos presentes en las distintas fuentes, se definió un espacio de clases clínicas común compuesto por las siguientes categorías:
-
-\begin{itemize}
-	\item \textbf{BEN}: lesiones benignas (nevus y otros diagnósticos no malignos).
-	\item \textbf{MEL}: melanoma.
-	\item \textbf{BCC}: carcinoma basocelular.
-	\item \textbf{SCC+}: carcinoma espinocelular y lesiones precursoras (queratosis actínica, queratoacantoma).
-\end{itemize}
-
-Esta categorización busca equilibrar la coherencia clínica con la viabilidad estadística, evitando una fragmentación excesiva de las clases que pudiera dificultar el entrenamiento y la interpretación de los modelos.
-
-\section{Heterogeneidad entre fuentes de datos}
-
-La combinación de múltiples bases de datos introduce heterogeneidad en términos de:
-
-\begin{itemize}
-	\item protocolos de adquisición de imagen,
-	\item calidad y resolución de las imágenes,
-	\item disponibilidad y formato de los metadatos,
-	\item criterios diagnósticos empleados por los distintos centros.
-\end{itemize}
-
-En lugar de eliminar esta heterogeneidad mediante filtrado agresivo, el presente trabajo adopta un enfoque de armonización controlada. El objetivo es preservar la máxima cantidad de información posible, al tiempo que se unifican los aspectos clave necesarios para el entrenamiento de modelos multimodales capaces de aprender patrones invariantes a las diferencias entre fuentes.
-
-\section{Análisis de variables y selección de metadatos}
-% 🚨 AQUÍ INTEGRAMOS EL NUEVO BLOQUE Y CORREGIMOS EL PLAN A/B 🚨
-El tratamiento de los metadatos clínicos constituye un elemento central del enfoque multimodal propuesto. Dado que SLICE-3D es la única base con características avanzadas, se definieron dos configuraciones experimentales diferenciadas:
-
-\subsection{Variables demográficas y clínicas básicas (Plan A)}
-Se definen como el conjunto mínimo de información disponible en un entorno de atención primaria, garantizando la comparabilidad con fuentes antiguas como ISIC Archive. Incluye:
-\begin{itemize}
-	\item \texttt{age\_approx}: Edad aproximada (vulnerabilidad sistémica).
-	\item \texttt{sex}: Sexo biológico.
-	\item \texttt{clin\_size\_long\_diam\_mm}: Tamaño físico de la lesión.
-	\item \texttt{anatom\_site\_general}: Ubicación anatómica en el cuerpo.
-\end{itemize}
-
-\subsection{Variables de morfología avanzada TBP-LV (Plan B)}
-Este conjunto explota al máximo la riqueza técnica del dataset SLICE-3D, incorporando más de 30 descriptores geométricos y de color derivados de Total Body Photography:
-\begin{itemize}
-	\item \textbf{Morfología}: \texttt{tbp\_lv\_areaMM2}, \texttt{tbp\_lv\_perimeterMM}, \texttt{tbp\_lv\_eccentricity}.
-	\item \textbf{Color y Contraste}: \texttt{tbp\_lv\_color\_std\_mean}, \texttt{tbp\_lv\_deltaA/B/L}.
-	\item \textbf{Estructura 3D}: Coordenadas espaciales \texttt{tbp\_lv\_x/y/z}.
-\end{itemize}
-
-\subsection{Identificación de variables de riesgo: Target Leakage y Bias}
-Uno de los pasos críticos de la auditoría de datos fue identificar variables que no deben estar presentes en la inferencia:
-\begin{itemize}
-	\item \textbf{Target Leakage}: Variables obtenidas tras el diagnóstico histopatológico (\texttt{mel\_thick\_mm}, \texttt{mel\_mitotic\_index}). Su uso inflaría el rendimiento de forma irreal, ya que un sistema de triaje no dispone de esta información antes de la biopsia.
-	\item \textbf{Bias por IA externa}: La columna \texttt{tbp\_lv\_dnn\_lesion\_confidence} representa la opinión de un modelo algorítmico previo. Se descarta para garantizar que el sistema propuesto aprenda de la imagen y no herede sesgos de predicciones ajenas.
-\end{itemize}
-
-\section{Identificadores clínicos y prevención de \textit{data leakage}}
-
-Para garantizar la validez experimental del estudio y evitar fugas de información entre los conjuntos de entrenamiento, validación y prueba, resulta fundamental analizar en detalle la estructura de los identificadores presentes en las bases de datos empleadas.
-
-En general, las imágenes pueden estar asociadas a distintos tipos de identificadores:
-
-\begin{itemize}
-	\item \textbf{Patient ID}: identifica de manera única a un paciente, que puede presentar una o varias lesiones.
-	\item \textbf{Lesion ID}: identifica una lesión concreta, que pertenece a un único paciente pero puede estar representada por múltiples imágenes.
-	\item \textbf{Identificador de imagen}: referencia una captura específica de una lesión determinada.
-\end{itemize}
-
-Esta estructura implica que no todas las imágenes son independientes entre sí. Un mismo paciente puede presentar varias lesiones, y una misma lesión puede estar representada por múltiples imágenes, lo que da lugar a grupos de datos altamente correlacionados. Si estos grupos se reparten de forma inadecuada entre los diferentes subconjuntos, se corre el riesgo de introducir \textit{data leakage}, inflando artificialmente las métricas de rendimiento del modelo.
-
-Durante el análisis preliminar se observó que la existencia de pacientes con múltiples lesiones y lesiones con múltiples imágenes daba lugar a grupos de tamaño elevado, lo que dificultaba la división equilibrada del conjunto de datos manteniendo, al mismo tiempo, la independencia entre los subconjuntos de entrenamiento y validación.
-
-Para resolver este problema, se definió un identificador unificado denominado \texttt{master\_group\_id}, construido siguiendo las reglas que se detallan a continuación:
-
+\subsection{Estructura y Composición Inicial}
+El dataset original descargado se compone de dos elementos fundamentales:
 \begin{enumerate}
-	\item Si \textbf{Patient ID} y \textbf{Lesion ID} están presentes, el \texttt{master\_group\_id} se define a partir de la combinación de ambos identificadores, de forma que todas las imágenes correspondientes a una lesión concreta de un paciente queden agrupadas.
-	\item Si \textbf{Patient ID} es nulo pero \textbf{Lesion ID} no lo es, se utiliza directamente el \textbf{Lesion ID} como \texttt{master\_group\_id}.
-	\item Si \textbf{Lesion ID} es nulo pero \textbf{Patient ID} está disponible, se utiliza el \textbf{Patient ID} como \texttt{master\_group\_id}.
-	\item Si ambos identificadores son nulos, se asigna un identificador único por imagen, de modo que cada muestra forme un grupo independiente.
+	\item \textbf{Cuerpo de Imágenes:} Una colección de cientos de miles de archivos en formato JPEG de alta resolución, que representan capturas macroscópicas y dermatoscópicas de lesiones cutáneas.
+	\item \textbf{Archivo de Metadatos (CSV):} Un archivo tabular estándar de valores separados por comas que asocia cada identificador de imagen con la información sociodemográfica del paciente, clínica y técnica. El archivo crudo constaba de 552\,598 registros (filas) y 37 características (columnas).
 \end{enumerate}
 
-Este enfoque garantiza que todas las imágenes pertenecientes a un mismo paciente o a una misma lesión se asignen siempre al mismo subconjunto de datos (entrenamiento, validación o prueba), evitando \textit{patient leakage} y asegurando una evaluación experimental rigurosa y realista del rendimiento de los modelos.
 
+\section{Diccionario de Variables y Naturaleza de los Datos}
+Para comprender el contexto del problema, es necesario definir la naturaleza de las variables proporcionadas por el archivo de metadatos. Las 37 características originales se pueden agrupar en tres grandes categorías:
 
+\begin{itemize}
+	\item \textbf{Variables de Trazabilidad:} Identificadores únicos alfanuméricos como \texttt{isic\_id} (ID de la fotografía), \texttt{patient\_id} (ID del paciente) y \texttt{lesion\_id} (ID de la lesión física).
+	\item \textbf{Variables Sociodemográficas y Anatómicas:} Características del paciente en el momento de la captura, destacando \texttt{age\_approx} (edad aproximada en tramos de 5 años), \texttt{sex} (sexo biológico) y \texttt{anatom\_site\_general} (región corporal general como torso, extremidades o cabeza/cuello).
+	\item \textbf{Variables Técnicas de Adquisición:} Información sobre el hardware utilizado, siendo la más crítica \texttt{image\_type}, que distingue entre fotografías tomadas con dermatoscopio digital de contacto y fotografías clínicas de cuerpo entero (TBP - \textit{Total Body Photography}).
+	\item \textbf{Variables Diagnósticas (\textit{Ground Truth}):} Una serie de columnas, desde \texttt{diagnosis\_1} hasta \texttt{diagnosis\_5}, que catalogan la lesión con creciente nivel de especificidad histopatológica.
+\end{itemize}
 
-\section{Consideraciones éticas y de uso de datos}
+\section{Análisis Exploratorio de Datos (EDA) Original}
+Antes de aplicar cualquier técnica de curación, se realizó un estudio estadístico descriptivo sobre el conjunto bruto de 552\,598 registros para comprender la distribución de la población de estudio.
 
-Todas las bases de datos utilizadas en este trabajo son de acceso público y han sido anonimizadas por sus autores originales. No se dispone de información identificable de pacientes y el uso de los datos se realiza exclusivamente con fines académicos y de investigación, respetando las licencias y condiciones de uso establecidas por ISIC y por los repositorios correspondientes.
+\subsection{Distribución Demográfica}
+El análisis reveló una población mayoritariamente adulta, con una edad media de aproximada de 56.3 años. En cuanto a la distribución por sexos biológicos, se observó una prevalencia de pacientes masculinos (59.7\%) frente a pacientes femeninos (32.4\%), existiendo un 7.9\% de registros sin esta información definida. Respecto a la localización anatómica, las lesiones se concentraban predominantemente en el torso posterior (25.4\%) y las extremidades inferiores (24.0\%).
 
-Además, se han adoptado medidas específicas para prevenir fugas de información entre los conjuntos de entrenamiento, validación y prueba. En particular, se ha prestado especial atención a la separación de imágenes pertenecientes a un mismo paciente, con el objetivo de garantizar la validez experimental de los resultados y evitar una sobreestimación artificial del rendimiento de los modelos.
+\subsection{El Desbalanceo Diagnóstico Natural}
+El análisis de la variable objetivo primaria (\texttt{diagnosis\_1}) demostró el severo desbalanceo inherente al cribado dermatológico en el mundo real. De los registros válidos iniciales:
+\begin{itemize}
+	\item El \textbf{90.96\%} (502\,646 muestras) correspondían a lesiones catalogadas estrictamente como \textbf{Benignas}.
+	\item Apenas el \textbf{4.91\%} (27\,111 muestras) eran tumores confirmados como \textbf{Malignos}.
+	\item El resto se componía de diagnósticos indeterminados o campos vacíos.
+\end{itemize}
+Este hallazgo estadístico subrayó la necesidad imperativa de aplicar en fases posteriores funciones de pérdida especializadas (\textit{Weighted CrossEntropy} o \textit{BCE con pesos asimétricos}) para evitar que la futura red neuronal colapsara prediciendo siempre la clase mayoritaria sana.
+
+\section{Desarrollo del Script de Auditoría Forense}
+En lugar de asumir la validez directa de la información contenida en el archivo CSV, se desarrolló e implementó un \textbf{script de auditoría de datos automatizado}. El propósito de este programa fue realizar un análisis forense exhaustivo de la base de datos antes de aplicar cualquier técnica de limpieza. El script ejecutó dos procesos analíticos fundamentales:
+
+\begin{enumerate}
+	\item \textbf{Análisis de correlación de valores nulos (NaNs) en diagnósticos:} \\
+	El script analizó el porcentaje de valores perdidos a través de las diferentes columnas diagnósticas originales. Específicamente, calculó para cada categoría de un diagnóstico primario (\texttt{diagnostico\_x}), qué porcentaje de valores nulos presentaba el diagnóstico secundario (\texttt{diagnostico\_y}). Este cruce de datos permitió revelar matemáticamente que el etiquetado médico en la base de datos de ISIC sigue una \textbf{clasificación en cascada}. Los facultativos diagnostican desde niveles muy generales a niveles muy específicos; por tanto, cuando una lesión no puede ser clasificada con certeza en un nivel superior, todos los subniveles diagnósticos descendentes aparecen sistemáticamente como nulos (NaN).
+	
+	\item \textbf{Detección de sesgos sistémicos mediante validación cruzada de metadatos:} \\
+	Para garantizar que la futura red neuronal no aprendiera correlaciones espurias, el script realizó una validación cruzada entre cada metadato disponible y el diagnóstico final. Para cada valor único dentro de un metadato (por ejemplo, los distintos rangos de edad, sexos, o tipos de dispositivo), el algoritmo calculó la distribución porcentual exacta de lesiones malignas y benignas asociadas a dicho valor. \\
+	Fue este análisis granular el que permitió descubrir sesgos críticos en la base de datos original. El hallazgo más notable fue el sesgo instrumental: el script evidenció que el porcentaje de casos malignos estaba fuertemente sesgado hacia un tipo de fotografía específico (capturas con dermatoscopio), mientras que la inmensa mayoría de las imágenes capturadas con sistemas de fotografía de cuerpo entero (TBP) resultaban ser diagnósticos benignos.
+\end{enumerate}
+
+Los resultados extraídos por este script de auditoría sentaron las bases empíricas para todas las decisiones metodológicas tomadas en las fases de limpieza, integración y reducción de datos descritas en capítulos posteriores.
