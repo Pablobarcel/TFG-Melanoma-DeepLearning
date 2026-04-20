@@ -120,7 +120,7 @@ def objective(trial, csv_path, images_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Búsqueda de Hiperparámetros (Optuna) para CNN ARP 6 Clases")
-    parser.add_argument('--csv_path', type=str, default="C:/TFG/data/Original_Data/ISIC_FINAL/dataset_train_cv.csv")
+    parser.add_argument('--csv_path', type=str, default="C:/TFG/data/Original_Data/ISIC_FINAL/train.csv")
     parser.add_argument('--images_dir', type=str, default="C:/TFG/src/data/processed/images_ARP_ISIC")
     parser.add_argument('--trials', type=int, default=20, help="Número de pruebas a realizar")
     args = parser.parse_args()
@@ -133,7 +133,13 @@ if __name__ == "__main__":
     
     # Pruner para cancelar trials malos rápidamente
     pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=2)
-    study = optuna.create_study(direction="maximize", study_name=study_name, pruner=pruner)
+    study = optuna.create_study(
+        direction="maximize", 
+        study_name=study_name, 
+        pruner=pruner,
+        storage="sqlite:///optuna_resultados_arp.db",  # ¡Esto es el salvavidas!
+        load_if_exists=True
+        )
     
     study.optimize(lambda trial: objective(trial, args.csv_path, args.images_dir), n_trials=args.trials)
     

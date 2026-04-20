@@ -1,4 +1,4 @@
-# src/data/dataset_metadata.py
+# src/data/metadata/dataset_metadata.py
 import torch
 import numpy as np
 from torch.utils.data import Dataset
@@ -27,7 +27,6 @@ class MetadataDataset(Dataset):
             self.std_age = std_age
             
         # 3. Aplicamos el Z-Score DE GOLPE (Vectorizado) a las filas válidas
-        # Evitamos división por cero si por algún milagro std_age es 0
         safe_std = self.std_age if self.std_age > 0 else 1e-6
         self.df.loc[valid_mask, 'age_approx'] = (valid_ages - self.mean_age) / safe_std
         
@@ -41,7 +40,16 @@ class MetadataDataset(Dataset):
         row = self.df.iloc[idx]
         features = torch.tensor(row[self.feature_cols].values.astype('float32'))
         
+        # --- LÓGICA DE ETIQUETAS UNIFICADA ---
         target_multi = int(row['target'])
-        target_binary = 1.0 if target_multi in self.malignant_classes else 0.0
         
-        return features, torch.tensor(target_binary, dtype=torch.float), torch.tensor(target_multi, dtype=torch.long)
+        # Leemos head_B_label si existe, si no, usamos el target base por seguridad
+        y_headB = int(row['head_B_label']) if 'head_B_label' in row else target_multi
+        
+        # Leemos head_a_label si existe, si no, lo derivamos dinámicamente
+        if 'head_a_label' in row:
+            y_headA = float(row['head_a_label'])
+        else:
+            y_headA = 1.0 if y_headB in self.malignant_classes else 0.0
+            
+        return features, torch.tensor(y_headA, dtype=torch.float), torch.tensor(y_headB, dtype=torch.long)
