@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 
 # --- Importaciones del proyecto ---
+from src.config.seed import set_seed
 from src.data.arp.dataset_arp import ARPDataset6Class
 from src.models.cnn_arp.arp_model_6class import ARPCNN6Class
 from src.data.transforms import get_train_transforms_arp, get_eval_transforms_arp
@@ -20,6 +21,8 @@ from src.evaluation.evaluate_6class import evaluate
 from src.evaluation.metrics_6class import metrics_headA, metrics_headB
 
 def train_arp_kfold():
+    set_seed(42)
+    
     print("="*60)
     print(" 🚀 INICIANDO ENTRENAMIENTO FINAL CNN ARP (Hiperparámetros Trial 36)")
     print("="*60)

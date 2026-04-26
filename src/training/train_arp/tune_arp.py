@@ -10,6 +10,9 @@ import numpy as np
 import argparse
 import optuna
 
+# 1. 🛡️ IMPORTAMOS LA SEMILLA
+from src.config.seed import set_seed
+
 # Importaciones generales
 from src.utils.losses import get_clinical_bce_loss, FocalLoss
 from src.utils.class_weights import compute_class_weights
@@ -132,6 +135,9 @@ def objective(trial, mode):
     return best_val_f1
 
 if __name__ == "__main__":
+    # 1. 🛡️ SEMILLA GLOBAL (Para pesos iniciales de la red, etc)
+    set_seed(42)
+
     parser = argparse.ArgumentParser(description="Optuna Tuning para CNN ARP (Imágenes Polares)")
     parser.add_argument('--mode', type=str, choices=['3class', '4class'], required=True, help="Elige el experimento: 3class o 4class")
     parser.add_argument('--trials', type=int, default=15, help="Número de pruebas a realizar")
@@ -140,7 +146,19 @@ if __name__ == "__main__":
     print(f"\n🧪 Iniciando Optuna HPO - Experimento ARP (Vision Polar): {args.mode.upper()}")
     
     study_name = f"optuna_arp_{args.mode}"
-    study = optuna.create_study(direction="maximize", study_name=study_name)
+    
+    # 2. 🧠 SAMPLER y PRUNER para garantizar reproducibilidad en la búsqueda
+    sampler = optuna.samplers.TPESampler(seed=42)
+    pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=2)
+    
+    # 3. 🎯 ASIGNAMOS AL ESTUDIO
+    study = optuna.create_study(
+        direction="maximize", 
+        study_name=study_name,
+        sampler=sampler,
+        pruner=pruner
+    )
+    
     study.optimize(lambda trial: objective(trial, args.mode), n_trials=args.trials)
     
     print(f"\n🏆 ¡Búsqueda completada para {args.mode.upper()}!")

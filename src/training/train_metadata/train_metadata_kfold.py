@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 
 # Ajusta estas rutas si tu estructura de carpetas es ligeramente distinta
+from src.config.seed import set_seed
 from src.data.metadata.dataset_metadata import MetadataDataset
 from src.models.cnn_metadata.metadata_model import MetadataMLP
 from src.utils.class_weights import compute_class_weights
@@ -18,6 +19,8 @@ from src.evaluation.evaluate_6class import evaluate
 from src.evaluation.metrics_6class import metrics_headA, metrics_headB
 
 def train_full_kfold():
+    set_seed(42)
+    
     print("="*60)
     print(" 🚀 INICIANDO ENTRENAMIENTO METADATOS (6 Clases + Binario)")
     print("="*60)

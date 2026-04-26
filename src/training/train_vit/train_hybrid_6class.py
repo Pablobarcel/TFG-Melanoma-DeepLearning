@@ -10,6 +10,7 @@ import os
 from datetime import datetime
 
 # --- Importaciones del proyecto ---
+from src.config.seed import set_seed
 from src.data.rgb.dataset_rgb import RGBDataset6Class
 from src.models.cnn_vit_rgb.hybrid_model_6class import HybridRGBModel6Class
 from src.data.transforms import get_train_transforms, get_eval_transforms
@@ -20,10 +21,17 @@ from src.evaluation.evaluate_6class import evaluate
 from src.evaluation.metrics_6class import metrics_headA, metrics_headB
 
 def train_hybrid_kfold():
+    set_seed(42)
+    
     print("="*80)
     print(" 🚀 INICIANDO ENTRENAMIENTO HÍBRIDO RGB (ResNet18 + ViT-Base)")
     print(" Protocolo: Linear Probing (LP) -> Fine-Tuning (FT) con DLR")
     print("="*80)
+
+    # =================================================================
+    # 🔧 CONFIGURACIÓN PARA REANUDAR EL ENTRENAMIENTO
+    # =================================================================
+    FOLD_A_EMPEZAR = 1  # ⚠️ Cambia este número por el Fold donde quieres continuar (ej. 3)
 
     # =================================================================
     # 🔧 CONFIGURACIÓN DEL EXPERIMENTO
@@ -40,6 +48,7 @@ def train_hybrid_kfold():
     BATCH_SIZE = 32   # Batch bajo porque ViT + ResNet consumen mucha VRAM
     BASE_LR = 1e-4
     WD = 1e-4
+    GAMMA = 2.0
 
     print(f"🖥️ Dispositivo: {DEVICE}")
     df = pd.read_csv(CSV_PATH)
@@ -67,6 +76,10 @@ def train_hybrid_kfold():
     scaler = torch.amp.GradScaler('cuda')
 
     for fold, (train_idx, val_idx) in enumerate(splits):
+        # 🚀 LÓGICA PARA SALTAR FOLDS YA COMPLETADOS
+        if fold + 1 < FOLD_A_EMPEZAR:
+            continue
+            
         fold_prefix = f"Fold_{fold+1}"
         print(f"\n" + "═"*80)
         print(f" 📂 INICIANDO {fold_prefix}/{NUM_FOLDS}")
@@ -86,7 +99,7 @@ def train_hybrid_kfold():
         # --- CONFIGURACIÓN DE PÉRDIDAS ---
         criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=2.0, device=DEVICE)
         w_multi = compute_class_weights(df_train, DEVICE, label_col="target")
-        criterion_B = nn.CrossEntropyLoss(weight=w_multi)
+        criterion_B = FocalLoss(weight=w_multi, gamma=GAMMA)
         
         best_val_f1 = 0.0
         optimizer = None
@@ -168,7 +181,7 @@ def train_hybrid_kfold():
             
             scheduler.step(val_loss)
             
-            # Guardamos el LR del Head (el grupo de parámetros índice 2) para el log
+            # Guardamos el LR del Head (el grupo de parámetros índice -1) para el log
             current_lr_head = optimizer.param_groups[-1]['lr']
             
             val_f1 = val_metrics['headB']['macro_f1']
@@ -209,12 +222,18 @@ def train_hybrid_kfold():
         metricas_finales_f1.append(best_val_f1)
 
     # Registro de medias finales (Average)
-    print("\n" + "═"*80)
-    print(" 📊 GENERANDO MÉTRICAS PROMEDIO DE LOS 5 FOLDS")
-    print("═"*80)
-    # (El logger ya procesa estos datos de tu dict avg_metrics si tienes el script adaptado como en ARP)
+    if FOLD_A_EMPEZAR == 1:
+        print("\n" + "═"*80)
+        print(" 📊 GENERANDO MÉTRICAS PROMEDIO DE LOS 5 FOLDS")
+        print("═"*80)
+        # (El logger ya procesa estos datos de tu dict avg_metrics si tienes el script adaptado como en ARP)
 
-    print(f" ⭐ RESUMEN K-FOLD RGB HÍBRIDO: F1-Macro Promedio = {np.mean(metricas_finales_f1):.4f}")
+        print(f" ⭐ RESUMEN K-FOLD RGB HÍBRIDO: F1-Macro Promedio = {np.mean(metricas_finales_f1):.4f}")
+    else:
+        print("\n" + "═"*80)
+        print(f" ⚠️ Entrenamiento finalizado. (Reanudado desde el Fold {FOLD_A_EMPEZAR})")
+        print(" No se calculan las medias globales para evitar inconsistencias matemáticas.")
+        print("═"*80)
 
 if __name__ == "__main__":
     train_hybrid_kfold()
