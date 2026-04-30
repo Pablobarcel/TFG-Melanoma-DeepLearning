@@ -33,6 +33,7 @@ experiments/*
 # Excepciones de experimentos importantes que si quiero guardar
 !experiments/arp_cnn_kfold/
 !experiments/metadata_kfold/
+!experiments/rgb_hybrid_kfold/
 
 # =========================
 # 4. Configuración del IDE / SO

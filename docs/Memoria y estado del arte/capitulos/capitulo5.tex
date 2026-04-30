@@ -113,10 +113,39 @@ El principal cuello de botella radicó en el consumo de memoria gráfica. La arq
 
 Adicionalmente, el trasiego de imágenes de alta resolución desde el disco hacia la GPU corría el riesgo de generar un cuello de botella de entrada/salida (E/S). Esto se mitigó mediante el uso de discos de estado sólido \textbf{NVMe} y el uso de múltiples hilos de lectura (\textit{DataLoaders workers}). La solución técnica para sortear la limitación de VRAM ---basada en la Acumulación de Gradientes (\textit{Gradient Accumulation}) y la Precisión Mixta Automática (\textit{AMP})--- será detallada en el Capítulo 8.
 
-\section{Reproducibilidad y control de versiones}
-\subsection{Fijación de semillas aleatorias (Seed locking)}
-% Explicar cómo fijar la semilla en PyTorch, Numpy y Python garantiza 
-% que el modelo siempre inicializa igual y los splits (5-fold) son repetibles.
-\subsection{Registro de métricas y \textit{Logs}}
-% Cómo se guardan los "best_model.pth" y los historiales de entrenamiento para 
-% trazar las gráficas de validación.
+\section{Reproducibilidad y Control de Versiones}
+
+La investigación en Inteligencia Artificial sufre con frecuencia problemas de reproducibilidad debido a la naturaleza estocástica (aleatoria) del \textit{hardware} y de los algoritmos. Operaciones como la inicialización de los pesos de la red neuronal, el barajado de las imágenes o la distribución en la memoria gráfica pueden generar variaciones en los resultados si el código se ejecuta múltiples veces. Para otorgar validez científica a los resultados de este proyecto, se ha diseñado un entorno de ejecución estrictamente controlado.
+
+\subsection{Fijación de Semillas Aleatorias (\textit{Seed Locking})}
+
+Para garantizar que este proyecto se rija por estándares de reproducibilidad del 100\,\%, se ha esterilizado el azar computacional forzando un comportamiento completamente determinista. Para ello, se ha fijado una ``semilla global'' (un valor constante establecido en 42) que sincroniza todos los motores de generación de números pseudoaleatorios del sistema:
+
+\begin{enumerate}
+	\item \textbf{Librerías base:} Fijación de la semilla en los módulos \texttt{random} nativo de Python y \texttt{NumPy}, asegurando que el muestreo de datos para Optuna y las divisiones de la validación cruzada (\textit{5-fold}) asignen matemáticamente las mismas imágenes a los mismos grupos en cada ejecución.
+	
+	\item \textbf{PyTorch y CUDA:} Fijación de la semilla en \texttt{torch} y \texttt{torch.cuda} para la inicialización determinista de los pesos de las redes neuronales. Adicionalmente, se ha forzado el modo determinista de \texttt{cuDNN} (librería base de aceleración de NVIDIA), sacrificando una fracción mínima de rendimiento en favor de una repetibilidad exacta en las operaciones con tensores gráficos.
+	
+	\item \textbf{Optimizador Bayesiano:} Se ha aplicado la misma semilla global al algoritmo de muestreo de Optuna, asegurando que la IA exploratoria pruebe las combinaciones de hiperparámetros en el mismo orden cronológico si el experimento es replicado.
+\end{enumerate}
+
+\subsection{Registro de Métricas y Visualización con TensorBoard}
+
+El entrenamiento de arquitecturas profundas e híbridas como la propuesta requiere horas de procesamiento ininterrumpido, lo que hace indispensable contar con un sistema robusto de monitorización y persistencia de datos. Para ello, se ha desarrollado un módulo de registro unificado (\texttt{ExperimentLogger}) que actúa como la ``caja negra'' del sistema.
+
+Este módulo gestiona la información en dos vertientes complementarias:
+
+\begin{itemize}
+	\item \textbf{Persistencia y Auditoría Estática:} El sistema genera archivos de registro en formato plano y CSV donde se almacenan, época a época, las métricas clave: pérdidas independientes de ambas cabezas, precisión, \textit{F1-Macro} y evolución de las tasas de aprendizaje diferenciales. Estos archivos permiten una auditoría forense posterior y la generación de tablas comparativas para la memoria de resultados.
+	
+	\item \textbf{Visualización Dinámica con TensorBoard:} Para la monitorización en tiempo real, se ha integrado la plataforma \textit{TensorBoard}. Mediante el uso de \texttt{SummaryWriter} de PyTorch, el sistema exporta los escalares de rendimiento a eventos binarios que permiten visualizar gráficamente la convergencia del modelo. Esta herramienta es crítica para:
+	\begin{enumerate}
+		\item Comparar visualmente el comportamiento de distintos \textit{folds} de la validación cruzada.
+		\item Detectar de forma inmediata discrepancias entre las curvas de entrenamiento y validación (indicios de sobreajuste).
+		\item Analizar el impacto de los cambios de la tasa de aprendizaje durante la transición entre las fases de \textit{Linear Probing} y \textit{Fine-Tuning}.
+	\end{enumerate}
+		
+	\item \textbf{Persistencia Inteligente de Pesos (\textit{Checkpointing}):} Guardar el estado completo de un modelo que combina ViT y ResNet18 en cada iteración consumiría un espacio de almacenamiento inasumible. En su lugar, se ha implementado una política de guardado condicional. Al finalizar cada época, el sistema evalúa el rendimiento en el conjunto de validación (priorizando el \textit{F1-Macro} del \textit{Head} B). Solo si este valor supera el mejor registro histórico absoluto de ese \textit{fold}, se exportan los parámetros y pesos de la red a un archivo binario (\texttt{best\_model.pth}). 
+\end{itemize}
+
+Gracias a este enfoque condicional, no solo se asegura el progreso ante posibles interrupciones de \textit{hardware}, sino que se garantiza que el modelo final evaluado en la fase de \textit{test} sea matemáticamente aquel que demostró la máxima capacidad de generalización, ignorando las posibles fluctuaciones o degradaciones de rendimiento que suelen ocurrir en las épocas finales del entrenamiento.

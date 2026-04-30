@@ -4,10 +4,9 @@
 
 % INTRODUCIR GRAFICAS ENSEÑANDO LOS PORCENTAJES, TANTO DE DESBALANCEO, COMO  DISTRIBUCIONES DE DATOS ETC.
 
-%INVERSTIGAR SOBRE QUE ES UN EDA Y COMO IMPLEMENTARLO CORRECTAMENTE
-
 \chapter{Descripción y Exploración de los Datos}
 
+\section{Introducción}
 \section{Adquisición y Estructura del Dataset Original}
 
 \subsection{Adquisición mediante \texttt{isic-cli}}
@@ -31,11 +30,19 @@ Para comprender el contexto del problema, es necesario definir la naturaleza de 
 	\item \textbf{Variables Diagnósticas (\textit{Ground Truth}):} Una serie de columnas, desde \texttt{diagnosis\_1} hasta \texttt{diagnosis\_5}, que catalogan la lesión con creciente nivel de especificidad histopatológica.
 \end{itemize}
 
+
 \section{Análisis Exploratorio de Datos (EDA) Original}
 Antes de aplicar cualquier técnica de curación, se realizó un estudio estadístico descriptivo sobre el conjunto bruto de 552\,598 registros para comprender la distribución de la población de estudio.
 
 \subsection{Distribución Demográfica}
 El análisis reveló una población mayoritariamente adulta, con una edad media de aproximada de 56.3 años. En cuanto a la distribución por sexos biológicos, se observó una prevalencia de pacientes masculinos (59.7\%) frente a pacientes femeninos (32.4\%), existiendo un 7.9\% de registros sin esta información definida. Respecto a la localización anatómica, las lesiones se concentraban predominantemente en el torso posterior (25.4\%) y las extremidades inferiores (24.0\%).
+
+\subsection{Detección de sesgos sistémicos mediante validación cruzada de metadatos}
+Para garantizar que la futura red neuronal no aprendiera correlaciones espurias, el script realizó una validación cruzada entre cada metadato disponible y el diagnóstico final. Para cada valor único dentro de un metadato (por ejemplo, los distintos rangos de edad, sexos, o tipos de dispositivo), el algoritmo calculó la distribución porcentual exacta de lesiones malignas y benignas asociadas a dicho valor. \\
+Fue este análisis granular el que permitió descubrir sesgos críticos en la base de datos original. El hallazgo más notable fue el sesgo instrumental: el script evidenció que el porcentaje de casos malignos estaba fuertemente sesgado hacia un tipo de fotografía específico (capturas con dermatoscopio), mientras que la inmensa mayoría de las imágenes capturadas con sistemas de fotografía de cuerpo entero (TBP) resultaban ser diagnósticos benignos.
+
+\subsection{Análisis de correlación de valores nulos (NaNs) en diagnósticos}
+El script analizó el porcentaje de valores perdidos a través de las diferentes columnas diagnósticas originales. Específicamente, calculó para cada categoría de un diagnóstico primario (\texttt{diagnostico\_x}), qué porcentaje de valores nulos presentaba el diagnóstico secundario (\texttt{diagnostico\_y}). Este cruce de datos permitió revelar matemáticamente que el etiquetado médico en la base de datos de ISIC sigue una \textbf{clasificación en cascada}. Los facultativos diagnostican desde niveles muy generales a niveles muy específicos; por tanto, cuando una lesión no puede ser clasificada con certeza en un nivel superior, todos los subniveles diagnósticos descendentes aparecen sistemáticamente como nulos (NaN).
 
 \subsection{El Desbalanceo Diagnóstico Natural}
 El análisis de la variable objetivo primaria (\texttt{diagnosis\_1}) demostró el severo desbalanceo inherente al cribado dermatológico en el mundo real. De los registros válidos iniciales:
@@ -46,16 +53,6 @@ El análisis de la variable objetivo primaria (\texttt{diagnosis\_1}) demostró 
 \end{itemize}
 Este hallazgo estadístico subrayó la necesidad imperativa de aplicar en fases posteriores funciones de pérdida especializadas (\textit{Weighted CrossEntropy} o \textit{BCE con pesos asimétricos}) para evitar que la futura red neuronal colapsara prediciendo siempre la clase mayoritaria sana.
 
-\section{Desarrollo del Script de Auditoría Forense}
-En lugar de asumir la validez directa de la información contenida en el archivo CSV, se desarrolló e implementó un \textbf{script de auditoría de datos automatizado}. El propósito de este programa fue realizar un análisis forense exhaustivo de la base de datos antes de aplicar cualquier técnica de limpieza. El script ejecutó dos procesos analíticos fundamentales:
-
-\begin{enumerate}
-	\item \textbf{Análisis de correlación de valores nulos (NaNs) en diagnósticos:} \\
-	El script analizó el porcentaje de valores perdidos a través de las diferentes columnas diagnósticas originales. Específicamente, calculó para cada categoría de un diagnóstico primario (\texttt{diagnostico\_x}), qué porcentaje de valores nulos presentaba el diagnóstico secundario (\texttt{diagnostico\_y}). Este cruce de datos permitió revelar matemáticamente que el etiquetado médico en la base de datos de ISIC sigue una \textbf{clasificación en cascada}. Los facultativos diagnostican desde niveles muy generales a niveles muy específicos; por tanto, cuando una lesión no puede ser clasificada con certeza en un nivel superior, todos los subniveles diagnósticos descendentes aparecen sistemáticamente como nulos (NaN).
-	
-	\item \textbf{Detección de sesgos sistémicos mediante validación cruzada de metadatos:} \\
-	Para garantizar que la futura red neuronal no aprendiera correlaciones espurias, el script realizó una validación cruzada entre cada metadato disponible y el diagnóstico final. Para cada valor único dentro de un metadato (por ejemplo, los distintos rangos de edad, sexos, o tipos de dispositivo), el algoritmo calculó la distribución porcentual exacta de lesiones malignas y benignas asociadas a dicho valor. \\
-	Fue este análisis granular el que permitió descubrir sesgos críticos en la base de datos original. El hallazgo más notable fue el sesgo instrumental: el script evidenció que el porcentaje de casos malignos estaba fuertemente sesgado hacia un tipo de fotografía específico (capturas con dermatoscopio), mientras que la inmensa mayoría de las imágenes capturadas con sistemas de fotografía de cuerpo entero (TBP) resultaban ser diagnósticos benignos.
-\end{enumerate}
-
-Los resultados extraídos por este script de auditoría sentaron las bases empíricas para todas las decisiones metodológicas tomadas en las fases de limpieza, integración y reducción de datos descritas en capítulos posteriores.
+\section{Definición del \textit{Ground Truth}}
+\subsection{Criterios para la validacion del \textit{ground truth}}
+\subsection{Selección de clases objetivo}

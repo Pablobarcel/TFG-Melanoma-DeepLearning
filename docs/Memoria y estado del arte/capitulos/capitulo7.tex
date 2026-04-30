@@ -2,41 +2,194 @@
 \chapter{Métricas de evaluación y ajuste de umbrales}
 
 \section{Introducción a la evaluación en escenarios de extremo desbalanceo}
-% Explicar por qué evaluar un dataset médico (ISIC 2024) requiere métricas específicas 
-% para no enmascarar los errores en las clases minoritarias (los cánceres).
+
+La validez de un sistema de diagnóstico asistido por computadora no reside únicamente en su capacidad de aprendizaje, sino en el rigor con el que se miden sus fallos. En el ámbito de la dermatología oncológica, la evaluación del rendimiento se enfrenta a un desafío estadístico crítico: el desbalanceo extremo del conjunto de datos.
+
+En el archivo ISIC utilizado en este proyecto, la prevalencia de lesiones benignas (clase mayoritaria) frente a las malignas (clase minoritaria) es de aproximadamente ocho a uno. Si se utilizasen métricas de evaluación convencionales, se correría el riesgo de caer en la ``paradoja de la exactitud'': un modelo que simplemente clasificara todas las muestras como benignas obtendría una precisión cercana al 90\,\%, pero su utilidad clínica sería nula al no detectar ni un solo cáncer.
+
+Por tanto, la evaluación de este sistema se ha diseñado para evitar el enmascaramiento de errores en las clases minoritarias. Se requiere un arsenal de métricas que penalicen con extrema dureza el error más costoso en medicina: el falso negativo (un cáncer no detectado).
 
 \section{La Matriz de Confusión como base evaluativa}
-\subsection{Formulación binaria (Cabeza A: Triage Clínico)}
-% Estructura de Verdaderos Positivos (Cáncer detectado) vs Falsos Negativos (Cáncer ignorado).
+
+La Matriz de Confusión es la herramienta fundamental sobre la que se construyen el resto de las métricas deterministas. Se trata de una tabla que permite visualizar el desempeño de un algoritmo de aprendizaje supervisado, comparando las etiquetas reales (\textit{Ground Truth}) frente a las predicciones realizadas por el modelo. Cada columna de la matriz representa las instancias de una clase predicha, mientras que cada fila representa las instancias de una clase real.
+
+\subsection{Formulación binaria (Cabeza A: Triaje Clínico)}
+
+Para la evaluación del \textit{Head} A, cuya misión es el triaje binario (benigno vs. maligno), la matriz se reduce a un formato de $2 \times 2$ que define cuatro estados fundamentales con implicaciones clínicas directas:
+
+\begin{itemize}
+	\item \textbf{Verdaderos Positivos (VP).} El modelo identifica correctamente una lesión maligna (MEL, BCC o SCC). Es el éxito del sistema en su función de alarma.
+	
+	\item \textbf{Verdaderos Negativos (VN).} El modelo confirma correctamente que una lesión es benigna. Reduce la carga asistencial innecesaria.
+	
+	\item \textbf{Falsos Positivos (FP) --- Error de Tipo I.} El modelo etiqueta como maligna una lesión que realmente es benigna. En clínica, esto se traduce en una biopsia o una derivación al especialista innecesaria, generando estrés en el paciente y gasto de recursos, pero sin riesgo vital.
+	
+	\item \textbf{Falsos Negativos (FN) --- Error de Tipo II.} Es el escenario crítico. El modelo etiqueta como benigna una lesión que en realidad es un cáncer. Clínicamente, esto implica enviar a un paciente con un melanoma a casa sin tratamiento. \textbf{Es la métrica que este proyecto busca minimizar de forma prioritaria.}
+\end{itemize}
+
 \subsection{Formulación multiclase (Cabeza B: Diagnóstico Diferencial)}
-% Cómo se lee la matriz cuando tenemos 3 o 4 clases compitiendo entre sí.
+
+Para el \textit{Head} B, la evaluación se vuelve más compleja al enfrentarse a una matriz de $6 \times 6$ correspondiente a las seis clases maestras (NV, MEL, BCC, SCC, BKL, BG).
+
+En esta formulación, la diagonal principal de la matriz representa los aciertos del modelo para cada patología. Sin embargo, el valor de esta matriz para un dermatólogo reside en los elementos fuera de la diagonal, que revelan la confusión semántica del modelo:
+
+\begin{itemize}
+	\item Permite identificar si el modelo confunde sistemáticamente el \textbf{Melanoma (MEL)} con las \textbf{Queratosis Benignas (BKL)}. Dado que las BKL son las ``grandes simuladoras'' visuales, una alta concentración de valores en esa intersección indicaría que el modelo necesita mejorar su capacidad de extracción de texturas finas.
+	
+	\item Ayuda a distinguir si la red es capaz de diferenciar entre distintos tipos de cáncer no-melanoma, como el \textbf{BCC} y el \textbf{SCC}, lo cual tiene implicaciones directas en el tipo de cirugía que se programará.
+\end{itemize}
+
+En un escenario multiclase desbalanceado, la Matriz de Confusión es la que permite verificar que el modelo no está simplemente desplazando las predicciones hacia la clase mayoritaria (\textit{Background} o Nevus), sino que realmente está trazando fronteras de decisión para cada una de las seis estirpes celulares.
 
 \section{Métricas de evaluación deterministas}
+
+Una vez definida la matriz de confusión, es necesario extraer indicadores numéricos que permitan cuantificar el rendimiento del modelo. En este proyecto, estas métricas no se analizan de forma aislada, sino que se interpretan según la función diagnóstica de cada una de las dos cabezas de la red.
+
 \subsection{La trampa de la Exactitud (\textit{Accuracy}) en imagen médica}
-% Explicar matemáticamente por qué un modelo inútil podría tener un 99% de Accuracy.
+
+La exactitud (\textit{Accuracy}) es la métrica más intuitiva, pues representa la fracción de predicciones correctas sobre el total de muestras:
+
+\begin{equation}
+	\text{Accuracy} = \frac{VP + VN}{VP + VN + FP + FN}
+\end{equation}
+
+Sin embargo, en el contexto del diagnóstico de cáncer de piel con el \textit{dataset} ISIC, la exactitud es una métrica profundamente engañosa. Debido al desbalanceo de clases (donde aproximadamente el 88\,\% de las imágenes son benignas), un modelo ``perezoso'' que se limitara a clasificar sistemáticamente todas las lesiones como benignas sin analizar un solo píxel obtendría un 88\,\% de \textit{Accuracy}.
+
+Desde un punto de vista matemático, el modelo parecería exitoso, pero desde un punto de vista clínico sería un desastre absoluto, ya que su capacidad para detectar melanomas sería del 0\,\%. Por esta razón, en este trabajo el \textit{Accuracy} se relega a un segundo plano, utilizándose únicamente como una métrica de control y nunca como el criterio principal para validar la eficacia del sistema.
+
+
+
 \subsection{Sensibilidad (\textit{Recall}): La métrica prioritaria}
-% Por qué en el cribado del cáncer (Head A) atrapar todos los positivos es la prioridad absoluta.
+
+La Sensibilidad (o \textit{Recall}) representa la capacidad del modelo para detectar correctamente todos los casos positivos reales (lesiones malignas):
+
+\begin{equation}
+	\text{Recall} = \frac{VP}{VP + FN}
+\end{equation}
+
+En la arquitectura propuesta, el \textit{Recall} es la métrica reina para el \textit{Head} A (triaje). En una herramienta de cribado clínico, el coste de oportunidad de un falso negativo (un cáncer ignorado) es infinitamente superior al de un falso positivo (una lesión benigna enviada a revisión).
+
+Priorizar el \textit{Recall} asegura que el sistema actúe como una red de seguridad térmica: es preferible que el modelo ``levante la bandera roja'' ante una lesión sospechosa que resulte ser benigna, a que permita que un melanoma pase desapercibido y progrese hacia una metástasis por falta de tratamiento temprano. Un alto \textit{Recall} en el \textit{Head} A garantiza la seguridad del paciente.
+
 \subsection{Especificidad y Precisión}
-% El papel de no saturar a los especialistas con biopsias innecesarias (Falsos Positivos).
+
+Aunque la prioridad es la sensibilidad, un modelo que clasifique todo como cáncer tampoco sería útil, ya que saturaría los servicios de dermatología. Para equilibrar el sistema, se introducen la especificidad y la precisión:
+
+\begin{itemize}
+	\item \textbf{Especificidad.} Mide la capacidad del modelo para identificar correctamente los casos negativos (lesiones benignas).
+	\begin{equation}
+		\text{Especificidad} = \frac{VN}{VN + FP}
+	\end{equation}
+	Una alta especificidad en este proyecto asegura que los pacientes con nevus comunes o lesiones queratósicas inocuas no sean sometidos a la ansiedad de un diagnóstico de sospecha de cáncer ni a procedimientos quirúrgicos innecesarios.
+	
+	\item \textbf{Precisión (\textit{Precision}).} Representa la fiabilidad de las alertas positivas del modelo. 
+	\begin{equation}
+		\text{Precision} = \frac{VP}{VP + FP}
+	\end{equation}
+	Responde a la pregunta: ``De todas las veces que el modelo dijo que era cáncer, ¿cuántas veces lo fue realmente?''. Una precisión baja implica un alto volumen de ``falsas alarmas''. 
+\end{itemize}
+
+En la práctica clínica, existe un compromiso o \textit{trade-off} constante: al intentar maximizar el \textit{Recall} para no perder ningún cáncer, la precisión suele disminuir. El desafío de este proyecto y la configuración de sus funciones de pérdida (como la \textit{Focal Loss}) es encontrar el punto de equilibrio donde el \textit{Recall} sea lo suficientemente alto para garantizar la seguridad, sin que la precisión caiga a niveles que invaliden la utilidad logística del sistema en un hospital.
 
 \section{Métricas agregadas y de promediado}
+
+En problemas de clasificación compleja, evaluar la precisión y la sensibilidad por separado puede ofrecer una visión fragmentada del rendimiento. Para obtener una calificación única que resuma la calidad del modelo, se recurre a métricas agregadas que combinan los diferentes tipos de error en un solo valor escalar.
+
 \subsection{El \textit{F1-Score} como medida de equilibrio}
+
+El \textit{F1-Score} es la media armónica entre la precisión y la sensibilidad (\textit{Recall}). A diferencia de la media aritmética simple, la media armónica penaliza de forma extrema los valores bajos. Esto significa que, para obtener un \textit{F1-Score} alto, el modelo debe ser capaz de obtener buenos resultados tanto en precisión como en sensibilidad de forma simultánea.
+
+La fórmula matemática se define como:
+
+\begin{equation}
+	F1 = 2 \cdot \frac{\text{Precisión} \cdot \text{Sensibilidad}}{\text{Precisión} + \text{Sensibilidad}}
+\end{equation}
+
+
+
+En este proyecto, el \textit{F1-Score} es fundamental porque evita el sesgo de optimización. Un modelo que tenga una sensibilidad perfecta (detecta todos los cánceres) pero una precisión pésima (clasifica todo como cáncer) tendrá un \textit{F1-Score} bajo. Esta métrica obliga a la red neuronal a ser ``selectiva'' y ``efectiva'' al mismo tiempo, buscando un punto de equilibrio que sea viable para la práctica dermatológica real.
+
 \subsection{Estrategias de promediado: \textit{Micro} vs. \textit{Macro F1-Score}}
-% 🚨 ESTO ES CLAVE PARA TU HEAD B 🚨
-% Explicar por qué tu código usa 'Macro F1-Score' para que la IA le dé la misma 
-% importancia a acertar un Melanoma que a acertar un Benigno.
+
+Cuando el problema se traslada al escenario multiclase del \textbf{\textit{Head} B} ---donde el modelo debe distinguir entre seis patologías distintas--- surge el dilema de cómo agregar los resultados de cada clase en un único indicador global. Existen dos estrategias principales:
+
+\begin{enumerate}
+	\item \textbf{\textit{Micro F1-Score}.} Calcula el rendimiento global contando el total de verdaderos positivos, falsos negativos y falsos positivos de todas las clases combinadas. En un \textit{dataset} tan desbalanceado como el ISIC, el \textit{Micro F1} se ve fuertemente influenciado por la clase mayoritaria (lesiones benignas). Un éxito en la detección de 20.000 nevus comunes eclipsaría matemáticamente el fracaso en la detección de 100 melanomas.
+	
+	\item \textbf{\textit{Macro F1-Score}.} Calcula el \textit{F1-Score} de cada una de las seis clases de forma independiente y luego realiza una media aritmética simple de esos valores:
+	\begin{equation}
+		F1_{\text{macro}} = \frac{1}{N} \sum_{i=1}^{N} F1_i
+	\end{equation}
+\end{enumerate}
+
+
+
+\textbf{Justificación clínica de la elección del \textit{Macro F1-Score}:}
+
+En el desarrollo de este sistema, se ha seleccionado el \textbf{\textit{Macro F1-Score}} como la métrica principal de optimización en Optuna y en la evaluación final. Esta decisión es estratégica: el promediado \textit{Macro} otorga el mismo peso específico a cada categoría, independientemente de cuántas imágenes tenga en el \textit{dataset}.
+
+Desde una perspectiva médica, acertar un caso de \textbf{Carcinoma Espinocelular (SCC)} ---clase muy minoritaria--- tiene la misma importancia algorítmica para el \textit{Macro F1} que acertar un caso de \textbf{Nevus (NV)} ---clase muy mayoritaria---. Al utilizar esta métrica, se obliga a la inteligencia artificial a esforzarse por aprender las características sutiles de los cánceres más raros, impidiendo que el modelo se vuelva ``perezoso'' y se limite a especializarse únicamente en las patologías más frecuentes. Es, en esencia, una garantía matemática de que el sistema respeta la diversidad de la patología cutánea.
 
 \section{Evaluación probabilística de la red}
-\subsection{Curva ROC (\textit{Receiver Operating Characteristic})}
-\subsection{Área Bajo la Curva (AUC) como medida de separabilidad}
-% Por qué el AUC es la métrica más honesta para evaluar la Cabeza A independientemente del umbral elegido.
 
+A diferencia de las métricas deterministas, que evalúan al modelo tras aplicar un umbral de decisión rígido (típicamente $0,5$), la evaluación probabilística analiza la capacidad de la red para asignar probabilidades coherentes. En el \textit{Head} A, el modelo no emite un veredicto absoluto, sino una probabilidad de malignidad comprendida entre $0$ y $1$. Evaluar esta salida bruta es esencial para entender el potencial real del sistema antes de tomar decisiones operativas.
+
+\subsection{Curva ROC (\textit{Receiver Operating Characteristic})}
+
+La curva ROC es una representación gráfica de la capacidad diagnóstica de un clasificador binario a medida que se varía su umbral de discriminación. Se construye enfrentando dos variables en un eje de coordenadas:
+
+\begin{itemize}
+	\item \textbf{Eje Y (Sensibilidad):} La fracción de verdaderos positivos.
+	\item \textbf{Eje X (1 --- Especificidad):} La fracción de falsos positivos.
+\end{itemize}
+
+La curva ROC describe el compromiso (\textit{trade-off}) entre atrapar todos los cánceres y no generar demasiadas falsas alarmas. En dermatología clínica, un punto en la esquina superior izquierda representaría el ``diagnosticador perfecto'' ($100\%$ de sensibilidad y $100\%$ de especificidad). La forma de la curva en este proyecto permite identificar visualmente si el modelo es robusto: una curva que se eleva rápidamente hacia el margen superior indica que la red es capaz de identificar la mayoría de las lesiones malignas incurriendo en muy pocos errores de tipo I.
+
+\subsection{Área Bajo la Curva (AUC) como medida de separabilidad}
+
+El Área Bajo la Curva (\textit{Area Under the Curve} o AUC-ROC) es el valor escalar que resume la información de la curva ROC. Su valor oscila entre $0,5$ (un modelo que predice al azar, equivalente a lanzar una moneda) y $1,0$ (un modelo que separa perfectamente ambas clases).
+
+Matemáticamente, el AUC tiene una interpretación estadística muy potente en el contexto médico: representa la probabilidad de que, ante un par de muestras elegidas al azar (una maligna y otra benigna), el modelo asigne una puntuación de riesgo más alta a la lesión maligna que a la benigna.
+
+\textbf{Justificación del AUC como métrica de referencia para el \textit{Head} A:}
+
+En el desarrollo de este sistema de triaje, el AUC se considera la métrica de rendimiento más fiable por las siguientes razones:
+
+\begin{enumerate}
+	\item \textbf{Independencia del umbral.} A diferencia del \textit{F1-Score} o el \textit{Accuracy}, que dependen de un umbral arbitrario, el AUC evalúa la calidad de la \textbf{separabilidad} de la red. Indica qué tan bien ``entiende'' el modelo la diferencia entre un melanoma y un nevus, independientemente de dónde se decida establecer el límite para la derivación clínica.
+	
+	\item \textbf{Invarianza al desbalanceo.} El AUC no se ve distorsionado por la alta prevalencia de casos benignos en el \textit{dataset} ISIC. Al evaluar el \textit{ranking} relativo entre clases, ofrece una medida de la capacidad intrínseca del sistema para no ignorar los casos de cáncer.
+\end{enumerate}
+
+En conclusión, mientras que otras métricas informan sobre cómo se comporta el modelo bajo una configuración fija, el AUC revela el potencial diagnóstico máximo que se puede extraer del \textit{Head} A, permitiendo confirmar que el sistema ha aprendido patrones biológicos reales y no sesgos estadísticos.
 \section{Ajuste del Umbral de Decisión y Factor de Seguridad Clínico}
-% 🚨 AQUÍ DEMUESTRAS QUE PIENSAS COMO INGENIERO 🚨
-% Explicar la diferencia entre el umbral neutral matemático (0.5) y un umbral 
-% penalizado para minimizar los Falsos Negativos (mandar un melanoma a casa).
+
+La salida de la red neuronal en el \textit{Head} A no es una clasificación binaria directa, sino una probabilidad continua $P(y=1|x)$ en el intervalo $[0, 1]$. Para transformar esta probabilidad en un veredicto diagnóstico, es necesario aplicar un umbral de decisión ($\tau$):
+
+\begin{equation}
+	\hat{y} = 
+	\begin{cases} 
+		1 & \text{si } P(y=1|x) \geq \tau \\
+		0 & \text{si } P(y=1|x) < \tau 
+	\end{cases}
+\end{equation}
+
+En la mayoría de los problemas de aprendizaje automático generalista, se utiliza un \textbf{umbral neutral matemático de $0,5$}. Sin embargo, en dermatología oncológica, este umbral es insuficiente y potencialmente peligroso. La asimetría en el coste de los errores dicta que un falso negativo (omitir un cáncer) es órdenes de magnitud más grave que un falso positivo (realizar una biopsia innecesaria).
+
+
+
+Por ello, en este proyecto se introduce el concepto de \textbf{Factor de Seguridad Clínico}. En lugar de aceptar el umbral por defecto, se analiza la curva ROC para seleccionar un $\tau$ más conservador (situado habitualmente entre $0,2$ y $0,3$).
+
+Al desplazar el umbral hacia la izquierda, se obliga al modelo a ser más ``desconfiado'': ante la mínima evidencia visual de malignidad, el sistema emitirá una alerta. Aunque esta decisión reduce la especificidad y aumenta las falsas alarmas, garantiza que el sistema cumpla con su función primordial de triaje: no permitir que ningún paciente con una lesión maligna sea enviado a casa sin una revisión especializada. Es la traducción matemática del principio médico \textit{primum non nocere}.
 
 \section{Justificación clínica de la estrategia de evaluación final}
-% Cierre: "En la Cabeza A se prioriza el Recall y el AUC para no perder pacientes, 
-% mientras que en la Cabeza B se prioriza el Macro F1-Score para asegurar que 
-% el sistema distingue bien entre distintos tipos de cáncer".
+
+Como cierre de este marco metodológico de evaluación, es imperativo justificar por qué se ha optado por una estrategia de métricas diferenciada para cada una de las dos cabezas del modelo. Esta decisión responde a la necesidad de simular el flujo de trabajo de una unidad de dermatología real.
+
+\begin{enumerate}
+	\item \textbf{Cabeza A (El ``Escudo de Seguridad'').} Para esta rama de triaje, la evaluación se centra de forma absoluta en el \textit{Recall} y el AUC. El objetivo es la robustez en la detección. No se busca que el modelo sea un diagnosticador infalible, sino que sea un detector de riesgo impecable. Un AUC alto en esta fase asegura que la red tiene la capacidad intrínseca de separar el cáncer de la salud, permitiendo ajustar los umbrales para maximizar la supervivencia del paciente.
+	
+	\item \textbf{Cabeza B (El ``Especialista Virtual'').} Una vez que la Cabeza A ha detectado el riesgo, la Cabeza B entra en juego para el diagnóstico diferencial. Aquí, la métrica prioritaria es el \textbf{\textit{Macro F1-Score}}. Al promediar el rendimiento de forma equitativa entre las seis clases maestras, se garantiza que el sistema sea un experto equilibrado. El uso del \textit{Macro F1} impide que el modelo ignore patologías menos frecuentes pero igualmente peligrosas, como el Carcinoma Espinocelular (SCC), asegurando que el especialista humano reciba una sugerencia diagnóstica no sesgada por la prevalencia estadística de los nevus comunes.
+\end{enumerate}
+
+En conclusión, la sinergia entre estas métricas permite validar un sistema que es, a la vez, seguro (gracias al \textit{Recall} en el triaje) y preciso (gracias al \textit{Macro F1} en el diagnóstico). Esta estrategia de evaluación cruzada garantiza que los resultados presentados en los capítulos posteriores no son meras estadísticas optimistas, sino indicadores de una herramienta con potencial de asistencia clínica real en el cribado del cáncer de piel.

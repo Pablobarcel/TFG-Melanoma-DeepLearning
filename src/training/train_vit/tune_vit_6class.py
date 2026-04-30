@@ -30,15 +30,18 @@ def get_data_loaders(csv_path, images_dir, batch_size):
         sgkf = StratifiedGroupKFold(n_splits=5)
         splits = list(sgkf.split(df, y=df['target'], groups=df['master_id']))
         _GLOBAL_SPLIT = splits[0]
-        
+    
     train_idx, val_idx = _GLOBAL_SPLIT
     df_train = df.iloc[train_idx].reset_index(drop=True)
     df_val = df.iloc[val_idx].reset_index(drop=True)
     
-    # 🚀 OPTIMIZACIÓN EXTREMA: Usar solo el 25% de los datos para Optuna (Estratificado)
+    # 🚀 OPTIMIZACIÓN EXTREMA: Usar solo el 25% de los datos (Estratificado)
     print(f"  -> Tamaño original Train: {len(df_train)} imgs")
-    df_train = df_train.groupby('target', group_keys=False).apply(lambda x: x.sample(frac=0.25, random_state=42)).reset_index(drop=True)
-    df_val = df_val.groupby('target', group_keys=False).apply(lambda x: x.sample(frac=0.25, random_state=42)).reset_index(drop=True)
+    
+    # ✅ FORMA MODERNA DE PANDAS: Directo con .sample() (Sin warnings y sin perder columnas)
+    df_train = df_train.groupby('target', group_keys=False).sample(frac=0.25, random_state=42).reset_index(drop=True)
+    df_val = df_val.groupby('target', group_keys=False).sample(frac=0.25, random_state=42).reset_index(drop=True)
+    
     print(f"  -> Tamaño reducido para Optuna: {len(df_train)} imgs")
     
     train_ds = RGBDataset6Class(df_train, images_dir, transforms=get_train_transforms())
@@ -50,23 +53,23 @@ def get_data_loaders(csv_path, images_dir, batch_size):
     return train_loader, val_loader, df_train
 
 def objective(trial, csv_path, images_dir):
-    # 1. ESPACIO DE BÚSQUEDA ACOTADO
+    # 1. 🎯 ESPACIO DE BÚSQUEDA REDUCIDO (Solo parámetros de Alta Importancia)
     base_lr = trial.suggest_float("base_lr", 1e-5, 5e-4, log=True)
-    cnn_lr_div = trial.suggest_categorical("cnn_lr_div", [10, 20, 50])
-    vit_lr_div = trial.suggest_categorical("vit_lr_div", [50, 100, 200])
-    epochs_lp = trial.suggest_int("epochs_lp", 2, 4) 
     weight_decay = trial.suggest_float("weight_decay", 1e-4, 1e-2, log=True)
-    dropout_rate = trial.suggest_float("dropout", 0.3, 0.5, step=0.1)
-    
-    # 🚀 NUEVO: Búsqueda del parámetro Gamma para Focal Loss (de 2.0 a 5.0)
     gamma_val = trial.suggest_float("gamma", 2.0, 5.0, step=0.5)
 
-    # Parámetros Fijos
+    # 2. ⚓ PARÁMETROS FIJOS (Cero Importancia en la gráfica anterior)
+    cnn_lr_div = 10
+    vit_lr_div = 100
+    epochs_lp = 4
+    dropout_rate = 0.4
+
+    # Parámetros Fijos Generales
     BATCH_SIZE = 32 
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    EPOCHS_TOTAL = 12 
+    EPOCHS_TOTAL = 15
 
-    print(f"\n🚀 Trial #{trial.number} | LR={base_lr:.2e} | LP_Ep={epochs_lp} | Drop={dropout_rate:.1f} | Gamma={gamma_val:.1f}")
+    print(f"\n🚀 Trial #{trial.number} | LR={base_lr:.2e} | WD={weight_decay:.2e} | Gamma={gamma_val:.1f}")
 
     # 2. CARGA DE DATOS
     train_loader, val_loader, df_train = get_data_loaders(csv_path, images_dir, BATCH_SIZE)
@@ -76,7 +79,7 @@ def objective(trial, csv_path, images_dir):
     
     criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=1.0, device=DEVICE)
     weights = compute_class_weights(df_train, DEVICE, label_col="target")
-    # 🚀 Aplicamos el gamma sugerido por Optuna
+    # Aplicamos el gamma sugerido por Optuna
     criterion_B = FocalLoss(weight=weights, gamma=gamma_val)
 
     scaler = torch.amp.GradScaler('cuda')
@@ -135,14 +138,14 @@ if __name__ == "__main__":
     # 1. 🛡️ Fijamos la semilla global al principio
     set_seed(42)
     
-    parser = argparse.ArgumentParser(description="Optuna Rápido para Híbrido RGB")
+    parser = argparse.ArgumentParser(description="Optuna Enfocado para Híbrido RGB")
     parser.add_argument('--csv_path', type=str, default="C:/TFG/data/Original_Data/ISIC_FINAL/train.csv")
     parser.add_argument('--images_dir', type=str, default="C:/TFG/src/data/processed/images_RGB_ISIC")
     parser.add_argument('--trials', type=int, default=25)
     args = parser.parse_args()
 
     print("\n" + "="*80)
-    print(f" 🚀 INICIANDO BÚSQUEDA OPTUNA RÁPIDA (Solo 25% de Datos | 12 Épocas)")
+    print(f" 🚀 INICIANDO BÚSQUEDA OPTUNA ENFOCADA (Solo 25% de Datos | 15 Épocas)")
     print("="*80)
     
     # 2. 🧠 Creamos el Sampler de Optuna con semilla
@@ -153,8 +156,8 @@ if __name__ == "__main__":
     
     study = optuna.create_study(
         direction="maximize", 
-        study_name="optuna_rgb_hybrid_fast_v2", 
-        storage="sqlite:///optuna_resultados_rgb_fast_v2.db", 
+        study_name="optuna_rgb_hybrid_focused_v3", # ⚠️ NUEVO NOMBRE OBLIGATORIO
+        storage="sqlite:///optuna_resultados_rgb_focused_v3.db", # ⚠️ NUEVA BBDD OBLIGATORIA
         load_if_exists=True,
         pruner=pruner,
         sampler=sampler # 3. 🎯 Asignamos el sampler con semilla al estudio

@@ -161,18 +161,57 @@ Para forzar al modelo a extraer características intrínsecas de las lesiones, e
 
 Esta técnica de reducción y balanceo garantiza un conjunto de datos \textbf{agnóstico al dispositivo de captura}. Una vez completado este muestreo, la columna \texttt{image\_type} fue eliminada definitivamente del archivo de metadatos, garantizando que el algoritmo carezca de atajos matemáticos y se vea obligado a basar sus predicciones diagnósticas única y exclusivamente en la morfología de la lesión y la fisiología del paciente.
 
-% =========================================================
 \section{Preprocesamiento Vectorial de Imágenes (\textit{Offline})}
-% =========================================================
+
+El conjunto de datos original de ISIC presenta una heterogeneidad extrema no solo a nivel clínico, sino también a nivel de \textit{hardware}. Las imágenes varían drásticamente en resolución (desde dimensiones de $600 \times 400$ píxeles hasta capturas macroscópicas en resoluciones 4K), relaciones de aspecto y formatos de compresión (\texttt{.jpg}, \texttt{.jpeg}, \texttt{.png}). Dado que arquitecturas profundas como \textit{ResNet18} o \textit{Vision Transformer} (ViT) exigen tensores de entrada de dimensiones estáticas y estandarizadas (típicamente $224 \times 224$ píxeles), se hizo indispensable diseñar un proceso de homogeneización visual.
+
 \subsection{Estandarización de la rama RGB}
-% Redimensionamiento, normalización de tensores y gestión de formatos. Explica que, en las primeras pruebas, el enfoque Online (redimensionar sobre la marcha en cada época usando interpolaciones complejas como Lanczos) generaba un cuello de botella grave de entrada/salida (I/O Bottleneck) y un uso de CPU del 100%, dejando a la GPU inactiva (CPU Starvation).
 
-% Detalla tu solución: Crear un pipeline de preprocesamiento Offline que redimensiona todo el corpus de 200.000 imágenes a 224x224 previamente.
+En las etapas iniciales de la investigación, la estandarización de las imágenes se implementó bajo un enfoque \textit{Online}; es decir, las imágenes originales en alta resolución se leían directamente del disco duro y se redimensionaban dinámicamente en la memoria RAM durante cada época de entrenamiento. Para no perder información clínica vital durante esta reducción, se utilizaban algoritmos de interpolación complejos y de alta fidelidad geométrica, como el filtro de Lanczos.
 
-% Menciona cómo esto redujo drásticamente el peso del dataset en disco y permitió que las transformaciones Online se limitaran únicamente a operaciones de bajo coste (giros, brillos), disparando la velocidad de lectura.
+Sin embargo, este enfoque dinámico generó un problema crítico a nivel de \textit{hardware}:
+
+\begin{itemize}
+	\item \textbf{Cuello de Botella de Entrada/Salida (\textit{I/O Bottleneck}).} Leer cientos de miles de archivos pesados repetidamente saturaba el ancho de banda del disco.
+	
+	\item \textbf{Inanición de la GPU (\textit{CPU Starvation}).} El procesador central (CPU) alcanzaba un 100\,\% de uso ejecutando las interpolaciones matemáticas de Lanczos para redimensionar los lotes (\textit{batches}). Como consecuencia, la Unidad de Procesamiento Gráfico (GPU) ---el componente más potente y necesario para calcular los gradientes de la red--- permanecía inactiva esperando a que la CPU le enviara los datos, multiplicando inasumiblemente los tiempos de entrenamiento.
+\end{itemize}
+
+Para resolver esta ineficiencia técnica, se desarrolló un \textit{pipeline} de preprocesamiento \textit{Offline}. Mediante un \textit{script} dedicado, se procesó de una sola vez la totalidad del corpus de aproximadamente 227.000 imágenes antes de iniciar cualquier entrenamiento. Este proceso consistió en:
+
+\begin{enumerate}
+	\item \textbf{Unificación de formatos.} Conversión de cualquier extensión heterogénea al formato estándar \texttt{.jpg} para homogeneizar la compresión y la lectura computacional.
+	
+	\item \textbf{Redimensionamiento estático.} Escalamiento de todas las imágenes a la resolución exacta de $224 \times 224$ píxeles utilizando interpolación bicúbica de alta calidad, guardando el resultado en un directorio dedicado (\texttt{processed/images\_RGB\_ISIC}).
+\end{enumerate}
+
+Este preprocesamiento \textit{Offline} redujo drásticamente el peso físico del \textit{dataset} en el disco duro (pasando de cientos de gigabytes a unos pocos gigabytes). Más importante aún, liberó completamente a la CPU de las tareas pesadas de interpolación. Durante el entrenamiento, las transformaciones \textit{Online} pudieron limitarse única y exclusivamente a operaciones matriciales de coste computacional casi nulo (como rotaciones aleatorias, ajustes sutiles de brillo y la normalización estadística de los canales RGB con las medias de ImageNet), permitiendo que la GPU operase al 100\,\% de su capacidad.
 
 \subsection{Transformación geométrica: Generación de la rama ARP}
-% Explicar el proceso algorítmico para convertir la imagen RGB a coordenadas polares (Angular Radial Partitioning).
+
+Mientras que la rama RGB se centra en el color y la textura, la segunda modalidad visual del modelo tiene como objetivo aislar la topología y geometría de la lesión. Para lograrlo, se implementó un segundo \textit{pipeline Offline} destinado a generar las imágenes para la red convolucional secundaria mediante la técnica de \textbf{Partición Radial Angular} (\textit{Angular Radial Partitioning} o ARP).
+
+Esta técnica transforma la imagen tradicional, basada en un sistema de coordenadas cartesianas espaciales $(x, y)$, en una representación cilíndrica basada en coordenadas polares $(r, \theta)$. El proceso algorítmico sigue estos pasos:
+
+\begin{enumerate}
+	\item \textbf{Cálculo del centroide.} Se asume que la lesión cutánea se encuentra predominantemente en el centro del encuadre fotográfico (dado que el \textit{dataset} ISIC proporciona imágenes centradas en la lesión anatómica). Se establecen las coordenadas centrales de la imagen $(x_c, y_c)$ como el origen anatómico.
+	
+	\item \textbf{Mapeo de Coordenadas Puras.} Para cada píxel de la nueva imagen, se calcula su distancia radial ($r$) y su ángulo ($\theta$) con respecto al centroide utilizando transformaciones trigonométricas fundamentales:
+	\begin{equation}
+		r = \sqrt{(x - x_c)^2 + (y - y_c)^2}
+	\end{equation}
+	\begin{equation}
+		\theta = \operatorname{atan2}(y - y_c, x - x_c)
+	\end{equation}
+	
+	\item \textbf{Desenrollado (\textit{Unwrapping}) y Remuestreo.} La imagen resultante se construye mapeando el radio $r$ en el eje vertical y el ángulo $\theta$ en el eje horizontal, barriendo de $0^\circ$ a $360^\circ$ ($0$ a $2\pi$ radianes).
+\end{enumerate}
+
+\textbf{Justificación Clínica y Matemática:}
+
+Visualmente, esta transformación ``desenrolla'' el lunar como si se tratase de un mapa topográfico. El centro de la lesión se convierte en la franja superior de la imagen ARP, mientras que los bordes periféricos se extienden hacia la parte inferior. Si un lunar es perfectamente simétrico y redondo (signo clínico de benignidad), en la imagen ARP su borde se dibujará como una línea horizontal perfectamente recta y paralela. Por el contrario, las proyecciones asimétricas, seudópodos o irregularidades en los bordes (signos clásicos del melanoma) se transforman en pronunciados valles y picos en la imagen polar.
+
+Al proporcionar esta vista geométrica precalculada, se exime a la red neuronal de tener que deducir complejas rotaciones espaciales, permitiendo que sus filtros convolucionales detecten anomalías estructurales simplemente identificando desviaciones verticales en el nuevo espacio de características horizontales.
 
 % =========================================================
 \section{Partición del Dataset y Estrategia de Evaluación}

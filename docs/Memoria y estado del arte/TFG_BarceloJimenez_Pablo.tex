@@ -40,6 +40,13 @@ urlcolor=urlcolor
 \titleformat{\subsection}{\bfseries\normalsize}{\thesubsection}{1em}{}
 \usepackage{setspace}
 \onehalfspacing
+% --- AÑADIR PARA QUE FUNCIONE EL DIAGRAMA DE TIKZ ---
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning}
+
+% --- AÑADIR PARA ARREGLAR LOS WARNINGS DE MÁRGENES ---
+\setlength{\headheight}{16pt} % Arregla el warning "\headheight is too small"
+\usepackage{microtype} % Arregla mágicamente el 90% de los "Overfull \hbox"
 
 \title{Título del Trabajo de Fin de Grado}
 \author{Nombre del Autor}

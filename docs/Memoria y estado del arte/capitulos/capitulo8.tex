@@ -4,38 +4,233 @@
 \chapter{Diseño de la Red Implementada}
 
 \section{Arquitectura Global del Sistema de Fusión Triple}
-% Visión general del grafo computacional: ramas independientes y su fusión final (Late Fusion).
+
+El sistema propuesto se fundamenta en un esquema de fusión tardía (\textit{Late Fusion}). El grafo computacional se organiza en tres ramas expertas independientes que operan en paralelo para extraer vectores de características (\textit{embeddings}) de alta dimensionalidad:
+
+\begin{itemize}
+	\item \textbf{Rama 1 (Metadatos):} Un Perceptrón Multicapa (MLP) que procesa variables tabulares.
+	\item \textbf{Rama 2 (ARP):} Una Red Neuronal Convolucional (CNN) optimizada para el espacio polar.
+	\item \textbf{Rama 3 (RGB):} Un sistema híbrido que integra un Transformador de Visión (ViT) y una arquitectura residual (ResNet18).
+\end{itemize}
+
+Una vez que cada rama genera su propio vector de rasgos, estos se concatenan en un único tensor multimodal que alimenta a las dos cabezas de decisión finales (\textit{Dual-Head}). Este enfoque de integración tardía es fundamental para evitar el olvido catastrófico de características visuales al introducir datos clínicos y permite que el modelo mantenga una visión de ``rayos X'' estructural combinada con el contexto epidemiológico del paciente.
 
 \section{Rama 1: Percepción Clínica (Metadatos MLP)}
+
+La primera rama del sistema actúa como un anclaje epidemiológico. Su función es transformar las variables demográficas y clínicas en una señal probabilística previa que condicione la interpretación visual de la red.
+
 \subsection{Topología del Perceptrón Multicapa Compartido}
-% Extractor de 13 -> 128 -> 64 dimensiones con Batch Norm y GELU.
-\subsection{Optimización Bayesiana (Optuna)}
-% Búsqueda del mejor LR, Weight Decay, Loss Type. Explicar por qué Optuna eligió Weighted CE frente a Focal Loss empíricamente.
+
+Basándose en la implementación del \textit{script} \texttt{metadata\_model.py}, la rama de metadatos se ha diseñado como un Perceptrón Multicapa (MLP) de dos etapas con un extractor de características compartido. La red recibe un vector de entrada de 13 dimensiones que contiene la edad aproximada y los datos codificados mediante \textit{One-Hot Encoding} (sexo y localización anatómica).
+
+La arquitectura interna se detalla a continuación:
+
+\begin{itemize}
+	\item \textbf{Capa de Entrada y Expansión.} Una capa lineal de $13 \to 128$ neuronas. Esta capa proyecta los datos clínicos dispersos a un espacio de mayor dimensión para facilitar la búsqueda de correlaciones no lineales.
+	\item \textbf{Estabilización y Activación.} Se aplica una capa de \textbf{Batch Normalization} seguida de la función de activación \textbf{GELU} (\textit{Gaussian Error Linear Unit}). A diferencia de ReLU, GELU proporciona una transición más suave en el origen, mejorando el flujo del gradiente en modelos que combinan metadatos con transformadores.
+	\item \textbf{Regularización.} Se ha incluido un \textbf{Dropout de $0,3$} para evitar que la red dependa excesivamente de una única variable clínica (como la edad) y fuerce la distribución del peso diagnóstico.
+	\item \textbf{Capa de Compresión y Salida.} Una segunda etapa lineal de $128 \to 64$ neuronas con \textbf{Dropout de $0,2$}, \textit{BatchNorm} y GELU. El resultado final es un vector de rasgos de 64 dimensiones que condensa la información del paciente antes de la bifurcación de las cabezas diagnósticas.
+\end{itemize}
+
+\subsection{Sintonización de Hiperparámetros (Optuna)}
+
+La configuración final de esta rama no ha sido arbitraria, sino el resultado de un estudio de optimización bayesiana mediante Optuna. Tras ejecutar múltiples iteraciones (\textit{trials}), se determinaron los siguientes parámetros óptimos para garantizar la convergencia:
+
+\begin{itemize}
+	\item \textbf{Tasa de Aprendizaje (LR):} $\sim 0,00406$.
+	\item \textbf{Decaimiento de Pesos (\textit{Weight Decay}):} $\sim 0,00095$ bajo el optimizador Adam.
+	\item \textbf{Estrategia de Funciones de Pérdida:} Para esta rama, se implementó una \textbf{\textit{Weighted CrossEntropy}} (Entropía Cruzada Ponderada) para el diagnóstico multiclase (\textit{Head} B).
+\end{itemize}
+
+\textbf{Justificación de la elección de \textit{Weighted CE} frente a \textit{Focal Loss}:}
+
+Aunque la \textit{Focal Loss} es superior en el procesamiento de imágenes complejas, los experimentos con Optuna demostraron que, para la rama de metadatos tabulares, la \textbf{\textit{Weighted CrossEntropy}} ofrecía una convergencia más estable. Ello se debe a que el desbalanceo en los metadatos es lineal y directo; aplicar un castigo basado en la frecuencia inversa de las clases resultó ser más efectivo para que el MLP no ignorara las prevalencias de cánceres minoritarios (como el SCC con peso $12,76$) en comparación con el factor modulador dinámico de la \textit{Focal Loss}.
 
 \section{Rama 2: Análisis Estructural (CNN ARP)}
+
+La segunda rama del sistema multimodal procesa las imágenes resultantes de la transformación a coordenadas polares. Al ser imágenes que representan la topología de la lesión en lugar de su colorimetría, se ha implementado una Red Neuronal Convolucional (CNN) específica diseñada para operar sobre un único canal de información (escala de grises).
+
 \subsection{Arquitectura Convolucional Personalizada}
-% Detalle de las capas convolucionales creadas desde cero.
+
+La arquitectura, denominada \texttt{ARPCNN6Class}, ha sido construida desde cero para maximizar la detección de irregularidades estructurales. El grafo computacional de esta rama se divide en cuatro bloques de extracción de rasgos y una etapa de agregación global:
+
+
+
+\begin{itemize}
+	\item \textbf{Bloques de extracción (Convolución y Estabilización).} La red consta de cuatro bloques secuenciales. Cada bloque integra una capa de convolución con filtros de $3 \times 3$, una capa de \textit{Batch Normalization} para estabilizar la distribución de los rasgos y una operación de \textit{Max Pooling} de $2 \times 2$ para reducir la dimensionalidad espacial.
+	\begin{enumerate}
+		\item \textbf{Bloque 1:} Procesa la entrada de $224 \times 224 \times 1$ y genera 32 mapas de características a $112 \times 112$.
+		\item \textbf{Bloque 2:} Expande la profundidad a 64 canales y reduce el tamaño a $56 \times 56$.
+		\item \textbf{Bloque 3:} Alcanza los 128 canales en una resolución de $28 \times 28$.
+		\item \textbf{Bloque 4:} Culmina en 256 canales con una resolución final de $14 \times 14$.
+	\end{enumerate}
+	
+	\item \textbf{Mejora arquitectónica: \textit{Global Average Pooling} (GAP).} Para evitar el uso de capas densas masivas que dispararían el número de parámetros ---evitando aproximadamente 25 millones de conexiones ineficientes---, se ha implementado una capa de \texttt{AdaptiveAvgPool2d}. Esta técnica colapsa cada uno de los 256 mapas de $14 \times 14$ a un único valor promedio, generando un vector de rasgos compacto y robusto frente a traslaciones en el eje polar.
+	
+	\item \textbf{Clasificador y \textit{Dual-Head}.} Tras la agregación, la red cuenta con una capa lineal compartida de 128 neuronas protegida por un \textbf{Dropout de $0,4$}. Finalmente, el flujo se bifurca en las dos cabezas diagnósticas:
+	\begin{itemize}
+		\item \textbf{\textit{Head} A:} Una salida lineal para el riesgo binario.
+		\item \textbf{\textit{Head} B:} Seis salidas para el diagnóstico multiclase diferencial.
+	\end{itemize}
+\end{itemize}
+
 \subsection{Sintonización de Hiperparámetros (Optuna)}
+
+Dada la sensibilidad de los filtros convolucionales a la señal de las imágenes ARP, se realizó una búsqueda exhaustiva mediante Optuna enfocada en la estabilidad de la convergencia. Los resultados del experimento 36 (\textit{Trial 36}) fueron identificados como óptimos y se utilizaron para el entrenamiento final del sistema:
+
+\begin{itemize}
+	\item \textbf{Optimizador AdamW.} A diferencia de la rama de metadatos, aquí se optó por \textbf{AdamW} para desacoplar el decaimiento de pesos (\textit{Weight Decay}) de la actualización del gradiente, mejorando la generalización sobre los bordes de la lesión.
+	\item \textbf{Valores óptimos:}
+	\begin{itemize}
+		\item \textbf{Tasa de Aprendizaje (LR):} $\sim 8,995 \times 10^{-5}$.
+		\item \textbf{\textit{Weight Decay} (WD):} $\sim 5,142 \times 10^{-5}$.
+		\item \textbf{Tamaño de lote (\textit{Batch Size}):} 64 imágenes, optimizando el uso de la VRAM y la estabilidad de los gradientes.
+	\end{itemize}
+\end{itemize}
+
+La búsqueda también exploró el uso de factores de castigo para las clases malignas dentro de la función de pérdida. Optuna validó que aplicar un multiplicador a los pesos de las clases MEL, BCC y SCC permitía que la rama estructural ARP fuese significativamente más sensible a las irregularidades geométricas propias de los carcinomas y melanomas, compensando el desbalanceo natural del \textit{dataset}.
 
 \section{Rama 3: Percepción Visual Híbrida (RGB)}
+
+Esta rama procesa imágenes dermatoscópicas estándar en color (RGB) de $224 \times 224$ píxeles. El objetivo es obtener una representación vectorial exhaustiva de la lesión mediante la concatenación de dos descriptores distintos que capturan diferentes escalas de información visual.
+
 \subsection{Extracción de rasgos locales: ResNet18}
+
+Para la captura de biomarcadores visuales de baja escala, como la regularidad de los bordes, el retículo pigmentario o las estructuras vasculares, se ha integrado una \textit{ResNet18} como extractor de características convolucional.
+
+
+
+\begin{itemize}
+	\item \textbf{Topología y \textit{Transfer Learning}.} Se utiliza una implementación de \texttt{torchvision} preentrenada en ImageNet. Para adaptar la red como extractor puro, se han eliminado las dos últimas capas (la capa de promediado global y la capa completamente conectada original), manteniendo únicamente los bloques residuales encargados de la extracción de mapas de características.
+	
+	\item \textbf{Salida de la sub-rama.} Tras los bloques residuales, se aplica una capa de \texttt{AdaptiveAvgPool2d} que colapsa la información espacial en un vector de rasgos de 512 dimensiones. Esta arquitectura es ideal para detectar patrones locales repetitivos que definen la textura de las lesiones cutáneas.
+\end{itemize}
+
 \subsection{Modelado de relaciones globales: Vision Transformer (ViT)}
-\subsection{Sintonización de Hiperparámetros (Optuna)}
+
+En paralelo a la CNN, se ha implementado un \textit{Vision Transformer} (ViT-Base) mediante la librería \texttt{timm} para capturar la coherencia global y las relaciones espaciales a larga distancia de la lesión.
+
+
+
+\begin{itemize}
+	\item \textbf{Arquitectura ViT.} Se utiliza el modelo \texttt{vit\_base\_patch16\_224}, el cual divide la imagen en parches de $16 \times 16$ píxeles. Estos parches son procesados mediante mecanismos de autoatención global, permitiendo que la red entienda la asimetría estructural de la lesión completa, superando las limitaciones de los campos receptivos de las CNN convencionales.
+	
+	\item \textbf{Salida de la sub-rama.} El ViT genera un vector de rasgos de 768 dimensiones.
+	
+	\item \textbf{Fusión híbrida interna.} Los vectores de la \textit{ResNet} (512) y del ViT (768) se concatenan en una etapa de fusión tardía interna para formar un tensor de 1280 dimensiones. Este vector combinado se somete a un \textbf{Dropout de $0,4$} antes de alimentar a las cabezas diagnósticas \textit{Dual-Head} (\textit{Head} A para riesgo binario y \textit{Head} B para clasificación de seis clases).
+\end{itemize}
+
+\subsection{Sintonización de hiperparámetros (Optuna)}
+
+Dada la alta complejidad de esta rama híbrida y su elevado número de parámetros (aproximadamente 97 millones), el proceso de optimización se diseñó para ser extremadamente eficiente y evitar la denominada ``maldición de la dimensionalidad''.
+
+\begin{itemize}
+	\item \textbf{Estrategia de búsqueda reducida.} Tras realizar análisis de importancia funcional (fANOVA) en etapas previas, se decidió centrar la búsqueda en Optuna únicamente en los tres parámetros con mayor impacto en el rendimiento: el \textit{base\_lr}, el \textit{weight\_decay} y el parámetro $\gamma$ de la \textit{Focal Loss}.
+	
+	\item \textbf{Justificación de parámetros fijos.} Otros parámetros, como la tasa de abandono (\textit{dropout}), las épocas de congelación inicial (LP) y los divisores de la tasa de aprendizaje diferencial, se fijaron a valores constantes basados en la literatura técnica y experimentos preliminares. Esta decisión estratégica permitió concentrar el poder de cómputo del algoritmo bayesiano en las variables de mayor impacto.
+	
+	\item \textbf{Rangos de búsqueda.} Se exploraron rangos logarítmicos para la tasa de aprendizaje ($1 \times 10^{-5}$ a $5 \times 10^{-4}$) y el decaimiento de pesos ($1 \times 10^{-4}$ a $1 \times 10^{-2}$), mientras que para $\gamma$ se buscó un valor entre $2,0$ y $5,0$ para compensar el desbalanceo de clases.
+\end{itemize}
+
+\textbf{Configuración óptima seleccionada:}
+
+A falta de completar el ciclo total de ejecuciones, los hiperparámetros identificados como candidatos para el modelo final son:
+
+\begin{itemize}
+	\item \textbf{\textit{Base Learning Rate} (LR):} \texttt{[VALOR\_LR]} (fijado temporalmente en $1 \times 10^{-4}$).
+	\item \textbf{\textit{Weight Decay} (WD):} \texttt{[VALOR\_WD]} (fijado temporalmente en $1 \times 10^{-4}$).
+	\item \textbf{Gamma ($\gamma$):} \texttt{[VALOR\_GAMMA]} (fijado temporalmente en $2,0$).
+\end{itemize}
 
 \section{Integración y Toma de Decisión (\textit{Late Fusion})}
+
+Tras el procesamiento independiente de las tres ramas expertas, el sistema debe consolidar la información para emitir un veredicto diagnóstico. Se ha optado por una estrategia de Fusión Tardía (\textit{Late Fusion}), la cual permite que cada modalidad alcance un nivel de abstracción profundo antes de ser combinada, evitando que el ruido de una rama (por ejemplo, una imagen de baja calidad) corrompa prematuramente la señal de las demás.
+
 \subsection{Concatenación de tensores multimodales}
+
+La integración se realiza mediante la concatenación de los vectores de rasgos (\textit{embeddings}) generados por los tres extractores. El resultado es un vector multimodal de 1472 dimensiones, compuesto de la siguiente forma:
+
+\begin{itemize}
+	\item \textbf{Rama RGB:} Aporta 1280 dimensiones (768 del \textit{ViT-Base} y 512 de la \textit{ResNet18}).
+	\item \textbf{Rama ARP:} Aporta 128 dimensiones tras su procesamiento convolucional y geométrico.
+	\item \textbf{Rama de Metadatos:} Aporta 64 dimensiones que contienen el contexto demográfico.
+\end{itemize}
+
+
+
+Este tensor unificado representa el conocimiento total del sistema sobre el paciente, integrando textura, geometría, contexto global y antecedentes clínicos en un único espacio vectorial de alta dimensionalidad.
+
 \subsection{Topología de las Cabezas de Decisión (\textit{Dual-Head})}
-% El diseño final de la capa lineal Binaria (Sigmoid) y Multiclase (Softmax).
+
+Para simular el flujo de decisión médico, el vector fusionado alimenta a una arquitectura de Doble Cabeza (\textit{Dual-Head}). Ambas cabezas operan en paralelo, pero están diseñadas para responder a objetivos clínicos distintos:
+
+\begin{enumerate}
+	\item \textbf{\textit{Head} A (Triaje Binario).} Implementada como una capa lineal de $1472 \to 1$. Emite un único valor real (\textit{Logit}) cuya interpretación probabilística mediante una función Sigmoide determina el riesgo de malignidad. Su diseño está optimizado para la detección temprana y la activación de alertas de derivación urgente.
+	
+	\item \textbf{\textit{Head} B (Diagnóstico Multiclase).} Implementada como una capa lineal de $1472 \to 6$. Proporciona seis valores brutos correspondientes a las seis clases maestras (NV, MEL, BCC, SCC, BKL, BG). Su función es el diagnóstico diferencial especializado, permitiendo identificar la estirpe celular exacta de la lesión.
+\end{enumerate}
 
 \section{Modelado Matemático del Entrenamiento Combinado}
+
+El éxito del sistema multimodal no depende solo de su arquitectura, sino de una formulación matemática del aprendizaje que respete las jerarquías de los datos y la seguridad del paciente.
+
 \subsection{Funciones de pérdida asimétricas e híbridas}
-% La BCEWithLogitsLoss con factor de castigo para el Head A, y el Weighted CrossEntropy para el Head B.
+
+Se ha diseñado un objetivo de optimización híbrido que combina dos funciones de pérdida para gestionar el desbalanceo y la criticidad médica:
+
+\begin{itemize}
+	\item \textbf{Pérdida para el \textit{Head} A (\texttt{BCEWithLogitsLoss}).} Se utiliza Entropía Cruzada Binaria combinada con un Factor de Castigo Clínico (\texttt{pos\_weight}). Calcular la pérdida directamente sobre los \textit{logits} garantiza una estabilidad numérica superior. El factor de castigo se ajusta para penalizar los falsos negativos con mayor severidad, forzando a la red a maximizar la sensibilidad diagnóstica.
+	
+	\item \textbf{Pérdida para el \textit{Head} B (\texttt{WeightedCrossEntropy}).} Para la clasificación de las seis clases, se utiliza una Entropía Cruzada Ponderada. Basándose en los experimentos con Optuna, esta función demostró ser más estable que la \textit{Focal Loss} en el modelo multimodal fusionado. Los pesos se calculan mediante la inversa de la frecuencia de clase, asegurando que el modelo otorgue la misma relevancia algorítmica a un melanoma que a un \textit{nevus} común.
+\end{itemize}
+
 \subsection{Aprendizaje Jerárquico mediante \textit{Differential Learning Rates}}
-% Cómo se aplica un LR de /100 al ViT, /10 a la CNN y /1 al Head de clasificación para no destruir los pesos preentrenados.
+
+Siguiendo las directrices de Kumar et al. (2022) sobre la preservación de características preentrenadas, se ha implementado un esquema de Tasas de Aprendizaje Diferenciales (DLR). Este enfoque reconoce que los componentes de la red deben aprender a velocidades distintas según su naturaleza:
+
+\begin{itemize}
+	\item \textbf{Nivel de Alta Velocidad ($LR/1$).} Aplicado a las cabezas de decisión finales. Al ser capas inicializadas aleatoriamente, requieren una adaptación rápida para aprender a interpretar la fusión de las tres ramas de información.
+	
+	\item \textbf{Nivel de Velocidad Robusta ($LR/10$).} Aplicado a las ramas convolucionales (\textit{ResNet18} y \textit{ARP CNN}) y al MLP de metadatos. Estas estructuras poseen sesgos inductivos que permiten refinarse sin colapsar matemáticamente.
+	
+	\item \textbf{Nivel de Velocidad Crítica ($LR/100$).} Aplicado exclusivamente al \textit{Vision Transformer} (ViT). Una tasa de aprendizaje restrictiva asegura que sus mapas de atención global se ajusten microscópicamente a la dermatología sin sufrir el fenómeno del olvido catastrófico.
+\end{itemize}
+
+Este modelado jerárquico garantiza que el conocimiento previo de los extractores actúe como una base sólida para la decisión clínica, evitando que sea sobrescrito por el ruido del entrenamiento inicial.
 
 \section{Tácticas de Optimización y Rendimiento de Hardware}
+
+La complejidad del sistema multimodal propuesto exige una orquestación precisa entre la CPU y la GPU para evitar cuellos de botella y asegurar que el modelo converja en un tiempo razonable sin exceder los límites de memoria.
+
 \subsection{Regularización por \textit{Modality Dropout}}
-% Apagado aleatorio de ramas enteras para obligar a la red a no depender solo de las imágenes.
+
+En sistemas de fusión tardía (\textit{Late Fusion}), existe el riesgo de que el modelo desarrolle una dependencia excesiva hacia la rama más rica en información (típicamente la RGB), ignorando las señales sutiles de los metadatos o la estructura ARP. Para mitigar este fenómeno, se ha explorado la técnica de \textbf{\textit{Modality Dropout}}.
+
+Esta técnica consiste en ``apagar'' aleatoriamente una de las ramas durante el entrenamiento, poniendo a cero su vector de rasgos antes de la concatenación final. Al forzar a las cabezas de decisión a clasificar la lesión contando únicamente con la información parcial de las ramas restantes, se obliga a la red a extraer el máximo valor de cada modalidad. Clínicamente, esto dota al modelo de una robustez superior, permitiéndole emitir diagnósticos fiables incluso ante la ausencia de alguna fuente de datos (por ejemplo, un paciente sin historial clínico previo).
+
 \subsection{Prevención de \textit{GPU Starvation}: \textit{Prefetch} y Múltiples \textit{Workers}}
+
+Uno de los problemas detectados en las fases iniciales fue el \textit{GPU Starvation} (inanición de la GPU), donde la tarjeta gráfica permanecía inactiva esperando a que la CPU terminara de procesar y cargar las imágenes. Para solucionar esto y optimizar el flujo de datos, se configuraron los \texttt{DataLoaders} de PyTorch con las siguientes directrices:
+
+\begin{itemize}
+	\item \textbf{\textit{Multi-processing Loading} (\texttt{num\_workers}).} Se asignaron múltiples hilos de procesamiento para la carga y transformación de imágenes en paralelo, asegurando que el siguiente lote (\textit{batch}) esté siempre listo en la memoria RAM antes de que la GPU termine el cálculo actual.
+	
+	\item \textbf{\textit{Pin Memory} y \textit{Prefetch}.} Se activó la propiedad \texttt{pin\_memory=True} para acelerar la transferencia de tensores desde la memoria del sistema a la memoria de la GPU, reduciendo la latencia de copia de datos a través del bus PCIe.
+\end{itemize}
+
 \subsection{Escalado de memoria: \textit{Gradient Accumulation} y \textit{Mixed Precision} (AMP)}
-% Cómo se entrenó con lotes virtuales grandes sin saturar la VRAM de la gráfica y usando Tensor Cores en FP16.
+
+Debido al gran volumen de parámetros de la arquitectura híbrida (aproximadamente 97 millones), el entrenamiento con lotes grandes era inviable en el \textit{hardware} convencional. Para superar esta limitación física sin sacrificar la estabilidad del gradiente, se implementaron dos tácticas críticas:
+
+\begin{enumerate}
+	\item \textbf{Precisión Mixta Automática (AMP).} Implementada mediante \texttt{torch.cuda.amp}. Esta técnica permite realizar la mayoría de las operaciones matemáticas en formato de coma flotante de 16 bits (FP16) en lugar de los 32 bits tradicionales (FP32). El uso de AMP ha permitido:
+	\begin{itemize}
+		\item Reducir el consumo de VRAM en casi un 50\,\%, permitiendo que el \textit{Vision Transformer} y la \textit{ResNet18} coexistan en la memoria gráfica.
+		\item Acelerar el entrenamiento hasta en un $2\times$ al aprovechar los \textit{Tensor Cores} de la arquitectura NVIDIA.
+		\item Mantener la precisión del modelo mediante un escalador de gradientes (\texttt{GradScaler}) que evita el desvanecimiento numérico en las capas críticas.
+	\end{itemize}
+	
+	\item \textbf{Acumulación de Gradientes (\textit{Gradient Accumulation}).} Para simular el efecto de entrenar con lotes de 64 o 128 imágenes cuando la memoria solo permitía físicamente lotes de 16 o 32, se optó por acumular los gradientes durante varios pasos antes de actualizar los pesos. Esta solución permite obtener una estimación del gradiente mucho más estable, lo cual es vital para la convergencia en el complejo paisaje de pérdida de un modelo de tres ramas.
+\end{enumerate}
+
+Gracias a estas optimizaciones de bajo nivel, el sistema es capaz de procesar la totalidad del \textit{dataset} con una eficiencia máxima, garantizando que el tiempo de investigación se invierta en la mejora de la arquitectura y no en esperas computacionales improductivas.

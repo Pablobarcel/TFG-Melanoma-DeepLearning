@@ -3,32 +3,282 @@
 %===========================================================
 \chapter{Metodología}
 
-\section{Enfoque de la investigación: Triage Dual (\textit{Dual-Head})}
-% Filosofía del modelo simulando el flujo hospitalario: Alerta binaria (Head A: ¿Es urgente?) y Diagnóstico diferencial (Head B: ¿Qué patología exacta es?).
+\section{Introducción}
 
-\section{Paradigma de Aprendizaje Multimodal}
-% Justificación científica de por qué la suma de tres modalidades reduce la incertidumbre:
-% 1. RGB: Textura y color.
-% 2. ARP: Topología estructural y geometría de bordes.
-% 3. Tabular (Metadatos): Contexto clínico y demográfico.
+En el desarrollo de sistemas de aprendizaje profundo (\textit{Deep Learning}) aplicados al ámbito médico, la obtención de métricas de alto rendimiento carece de valor si no está respaldada por un marco metodológico estricto, transparente y reproducible. A diferencia de otros dominios tecnológicos, la inteligencia artificial en dermatología clínica debe enfrentarse a desafíos inherentes a la naturaleza de los datos de salud: desbalanceos extremos entre clases, variabilidad en la calidad de las muestras y el riesgo constante de fugas de datos (\textit{data leakage}) que pueden generar falsas estimaciones de éxito. Por ello, una metodología clara y rigurosa no solo es una herramienta de ingeniería, sino una garantía de seguridad y viabilidad clínica.
 
-\section{Armonización Taxonómica: El Sistema de 6 Clases}
-% Justificación clínica de pasar de decenas de subtipos histológicos a 6 clases maestras (NV, MEL, BCC, SCC, BKL, BG), agrupando por comportamiento biológico y manejo terapéutico.
+El presente capítulo detalla exhaustivamente la arquitectura y el diseño experimental del sistema propuesto, trazando el camino desde la concepción del modelo hasta su optimización final. Para facilitar su comprensión, el contenido de este capítulo se ha estructurado en tres grandes bloques temáticos:
 
-\section{Estrategia de Aprendizaje y Transferencia de Conocimiento}
-\subsection{Prevención del Olvido Catastrófico (\textit{Catastrophic Forgetting})}
-% Metodología para aprovechar pesos preentrenados (ImageNet/ISIC) sin destruir sus filtros base.
-\subsection{Protocolo \textit{Linear Probing} seguido de \textit{Fine-Tuning} (LP-FT)}
-% Explicar la congelación inicial de las ramas (dejando aprender solo a las cabezas) y el descongelamiento progresivo.
+\begin{itemize}
+	\item \textbf{Bloque I: Fundamentos Arquitectónicos y Datos.} La primera parte del capítulo aborda el diseño estructural del sistema. Se introduce el enfoque de la investigación mediante una arquitectura de doble cabeza (\textit{Dual-Head}), diseñada para simular el flujo de decisiones del triaje médico real (detectando la urgencia maligna y clasificando la patología exacta simultáneamente). A continuación, se detalla el paradigma de aprendizaje multimodal, justificando científicamente cómo la combinación de imágenes a color (RGB), imágenes de reflectancia polarizada (ARP) y metadatos clínicos reduce la incertidumbre diagnóstica del modelo.
+	
+	\item \textbf{Bloque II: Estrategias de Entrenamiento y Compensación.} El segundo bloque profundiza en el ``motor'' del modelo y en cómo este se enfrenta a la realidad de los datos médicos. Se expone el abordaje matemático del desbalanceo de clases, justificando la elección de funciones de pérdida avanzadas frente a las técnicas clásicas de remuestreo de datos. Asimismo, se detallan las estrategias de aprendizaje empleadas para la transferencia de conocimiento (\textit{Transfer Learning}), incluyendo mecanismos para evitar el olvido catastrófico de la red mediante protocolos de entrenamiento por fases (\textit{Linear Probing} y \textit{Fine-Tuning}) y el uso de tasas de aprendizaje diferenciales.
+	
+	\item \textbf{Bloque III: Rigor Científico y Optimización.} Finalmente, el tercer bloque describe los mecanismos implementados para garantizar la robustez, objetividad y reproducibilidad de los resultados. Se explicará la metodología de validación cruzada estratificada con aislamiento hermético de pacientes, así como el control determinista del azar computacional. Como cierre, se presentará la estrategia de búsqueda y configuración de hiperparámetros, detallando el uso de técnicas de optimización bayesiana para maximizar la capacidad de generalización de las redes neuronales diseñadas.
+\end{itemize}
 
-\section{Metodología de Validación y Robustez}
-\subsection{Aislamiento hermético de pacientes}
-% Uso del Master Group ID para evitar fugas de datos (Data Leakage) entre entrenamiento y test.
-\subsection{Validación Cruzada (\textit{5-fold Cross-Validation})}
-% Justificación estadística para asegurar que el modelo generaliza bien independientemente de la partición.
+\section{Enfoque de la Investigación: Arquitectura de Doble Cabeza (\textit{Dual-Head})}
 
-\section{Criterios de Evaluación Clínica}
-% Selección de métricas: F1-Macro para el diagnóstico multiclase y sensibilidad/AUC para la detección crítica de melanomas en el Head A.
+La mayoría de los sistemas de diagnóstico dermatológico basados en Inteligencia Artificial tradicional abordan el problema como una tarea de clasificación única, ya sea puramente binaria (maligno vs. benigno) o puramente multiclase (identificando la patología específica). Sin embargo, en la práctica clínica real, el proceso de toma de decisiones del especialista no es unidimensional, sino que sigue un flujo jerárquico centrado en el riesgo del paciente.
+
+Para replicar este flujo cognitivo, se ha diseñado una arquitectura de ``Doble Cabeza'' (\textit{Dual-Head}), donde un único cuerpo extractor de características (el \textit{backbone} de la red) se bifurca en la etapa final en dos clasificadores lineales independientes:
+
+\begin{itemize}
+	\item \textbf{Head A (Alerta Binaria --- Triaje).} Su único objetivo es determinar si la lesión es maligna o benigna. Actúa como el filtro de urgencias de un hospital. Su entrenamiento está fuertemente sesgado hacia la sensibilidad clínica, priorizando minimizar los falsos negativos a toda costa. Para este clasificador, confundir un melanoma con un carcinoma basocelular es irrelevante, ya que ambos requieren derivación urgente; su misión es levantar la bandera roja.
+	
+	\item \textbf{Head B (Diagnóstico Diferencial --- Multiclase).} Actúa como el especialista dermatólogo. Su objetivo es identificar la patología exacta entre seis posibles categorías. Su entrenamiento busca la máxima precisión global (\textit{F1-Score}) y el correcto mapeo de las características visuales sutiles que separan lesiones similares.
+\end{itemize}
+
+Esta separación arquitectónica ofrece una ventaja técnica crucial: permite aplicar funciones de pérdida (\textit{loss functions}) y castigos matemáticos de forma independiente. Mientras el \textit{Head} A puede ser hiperpenalizado por pasar por alto un cáncer, el \textit{Head} B puede centrarse tranquilamente en distinguir la textura diferencial entre dos lesiones benignas. Al final, los gradientes matemáticos de ambas cabezas retropropagan sus errores hacia el mismo \textit{backbone} compartido, obligando a la red a aprender representaciones visuales mucho más ricas, robustas y clínicamente útiles que si se entrenara una sola cabeza.
+
+\subsection{Definición de las 6 Clases Clínicas}
+
+Los conjuntos de datos públicos masivos, como el archivo del \textit{International Skin Imaging Collaboration} (ISIC), contienen decenas de diagnósticos histológicos extremadamente granulares (p. ej., queratosis liquenoide, lentigo solar, queratosis seborreica, nevus atípico, etc.). Entrenar un modelo para distinguir entre decenas de subtipos no solo fragmenta excesivamente los datos y dificulta el aprendizaje de la red neuronal, sino que carece de utilidad práctica inmediata en un entorno de atención primaria.
+
+Por ello, se ha llevado a cabo una armonización taxonómica, agrupando la multiplicidad de diagnósticos del ISIC en \textbf{seis clases clínicas maestras}. Esta agrupación no se ha hecho en base a similitudes visuales, sino siguiendo criterios de estirpe celular, comportamiento biológico y, sobre todo, \textbf{manejo terapéutico}:
+
+\begin{enumerate}
+	\item \textbf{NV (Nevus Melanocítico).} Lesiones benignas derivadas de los melanocitos (lunares comunes). Clínicamente, su manejo es la simple observación rutinaria o la tranquilidad del paciente.
+	
+	\item \textbf{MEL (Melanoma).} El cáncer de piel más letal, derivado de los melanocitos. Tiene un alto potencial de metástasis rápida. Su diagnóstico exige una escisión quirúrgica urgente con márgenes amplios. Representa la métrica crítica de seguridad del sistema.
+	
+	\item \textbf{BCC (Carcinoma Basocelular).} Cáncer de piel no melanoma (NMSC). Es el cáncer humano más frecuente. Aunque es localmente destructivo y requiere cirugía (frecuentemente cirugía de Mohs), su capacidad de metástasis es extremadamente baja, por lo que su urgencia vital es menor que la del melanoma.
+	
+	\item \textbf{SCC (Carcinoma Espinocelular y precursores).} Cáncer de piel no melanoma originado en los queratinocitos epidérmicos. Incluye tanto el SCC invasivo como sus precursores directos (Queratosis Actínica y Enfermedad de Bowen). Presenta un riesgo de metástasis significativamente mayor que el BCC, especialmente en zonas mucosas o inmunodeprimidos, requiriendo tratamiento activo e inmediato.
+	
+	\item \textbf{BKL (\textit{Benign Keratotic Lesions} --- Lesiones Queratósicas Benignas).} Una supercategoría que agrupa la Queratosis Seborreica, el Lentigo Solar y la Queratosis Liquenoide. Son lesiones no melanocíticas, originadas en la epidermis, sin ningún potencial de malignización. Frecuentemente se confunden visualmente con melanomas (las ``grandes simuladoras''), pero su manejo clínico es nulo o puramente estético.
+	
+	\item \textbf{BG (\textit{Background} / Otros Benignos).} Agrupa entidades benignas misceláneas que no encajan en las anteriores, como el Dermatofibroma (reacción fibrosa a picaduras o microtraumas) o lesiones vasculares (angiomas, hemangiomas). Es vital que el modelo conozca esta clase para no clasificar por descarte estas lesiones comunes como malignas.
+\end{enumerate}
+
+Esta reducción a seis clases garantiza que el modelo dedique toda su capacidad computacional a trazar las fronteras de decisión que realmente salvan vidas y determinan el protocolo quirúrgico a seguir, eliminando el ruido estadístico de patologías cuyo pronóstico es idéntico.
+
+\section{Aprendizaje Multimodal}
+
+El diagnóstico dermatológico en la práctica clínica real rara vez se fundamenta en una única observación aislada. Un especialista no solo evalúa el color de una lesión, sino que analiza la regularidad de sus bordes, su simetría estructural y, de manera crucial, el historial clínico y el contexto demográfico del paciente. Basarse en una única fuente de información eleva el riesgo de sesgo y reduce la capacidad de generalización ante casos atípicos.
+
+Para replicar este proceso holístico y minimizar la incertidumbre diagnóstica, el sistema propuesto abandona el enfoque unimodal tradicional en favor de un paradigma de \textbf{Aprendizaje Multimodal}. Este enfoque divide la extracción de características en tres ramas de procesamiento independientes y especializadas, donde cada modalidad aporta un eje de información complementario que cubre las carencias de las demás:
+
+\subsection{Imágenes Dermatoscópicas Estándar (RGB): Color y Textura}
+
+La primera modalidad constituye el núcleo visual del sistema, utilizando imágenes dermatoscópicas estándar en el espacio de color RGB. Esta rama es la encargada de capturar los biomarcadores visuales clásicos que busca un dermatólogo, tales como las redes de pigmento, la asimetría cromática, los velos blanco-azulados o las estructuras vasculares.
+
+\begin{itemize}
+	\item \textbf{Aportación:} Extrae la semántica visual profunda, el color y la textura de la lesión. Es la modalidad con mayor riqueza de información bruta, pero también la más susceptible a artefactos visuales (vello, variaciones de iluminación o burbujas de gel).
+	
+	\item \textbf{Implementación:} Dada la enorme complejidad de esta tarea, se procesa mediante una \textbf{Arquitectura Híbrida de alta capacidad} que combina una red convolucional (\textit{ResNet18}) para la extracción de patrones locales de textura, y un Transformador de Visión (\textit{ViT-Base}) para comprender el contexto global y espacial de la imagen.
+\end{itemize}
+
+\subsection{Representación de Borde y Geometría (ARP): Topología Pura}
+
+La segunda modalidad, denominada ARP (basada en coordenadas polares), transforma la imagen espacial tradicional en una representación geométrica donde el eje X representa el ángulo y el eje Y representa el radio desde el centroide de la lesión.
+
+\begin{itemize}
+	\item \textbf{Aportación:} Esta transformación aísla por completo la topología estructural y la geometría de los bordes. Al desenrollar la lesión, métricas clínicas fundamentales como la simetría, la regularidad de los bordes o la dispersión radial del pigmento se convierten en patrones lineales fácilmente interpretables matemáticamente. Permite al modelo evaluar la ``forma'' pura sin distraerse por el color de la piel del paciente o la iluminación del dermatoscopio.
+	
+	\item \textbf{Implementación:} Al tratarse de una representación estructural simplificada, no requiere un modelo masivo. Se procesa utilizando una \textbf{Red Convolucional (CNN) ligera y personalizada} creada desde cero. Su entrenamiento requiere un protocolo de \textit{Data Augmentation} muy estricto (como la prohibición de volteos verticales, que invertirían matemáticamente el núcleo de la lesión hacia la periferia), respetando así las leyes de la física del espacio polar.
+\end{itemize}
+
+\subsection{Contexto Clínico y Demográfico (Metadatos)}
+
+La tercera modalidad abandona el dominio de la visión artificial e introduce datos tabulares. Contiene la anamnesis básica del paciente, incluyendo variables como la edad, el sexo y la localización anatómica exacta de la lesión.
+
+\begin{itemize}
+	\item \textbf{Aportación:} Actúa como un ``filtro bayesiano de probabilidad previa''. Por ejemplo, aunque el modelo RGB detecte un patrón atípico, la probabilidad de que sea un Carcinoma Basocelular (BCC) aumenta drásticamente si los metadatos indican que el paciente tiene 80 años y la lesión está en una zona de alta exposición solar (como la cabeza o el cuello). Del mismo modo, un melanoma es estadísticamente improbable en un paciente pediátrico. Los metadatos anclan las predicciones visuales a la realidad epidemiológica.
+	
+	\item \textbf{Implementación:} Estos datos tabulares se procesan mediante un \textbf{Perceptrón Multicapa (MLP)}, una red neuronal clásica que aprende las correlaciones no lineales entre las variables demográficas y las distintas estirpes tumorales.
+\end{itemize}
+
+En conclusión, la sinergia de estas tres modalidades aborda la lesión desde el detalle microscópico (RGB), pasando por su estructura geométrica (ARP), hasta su contexto epidemiológico (Metadatos). Si una de las modalidades falla (por ejemplo, una imagen borrosa), las otras dos actúan como red de seguridad, reduciendo drásticamente la tasa de falsos positivos y falsos negativos en la decisión final de la red.
+
+\section{Abordaje del Desbalanceo y Funciones de Pérdida}
+
+Uno de los desafíos más críticos en este proyecto es el desbalanceo extremo del conjunto de datos. En el archivo ISIC, la proporción entre lesiones benignas y malignas es aproximadamente de 8 a 1, y si analizamos las seis clases maestras, la disparidad es aún mayor (con clases como el Carcinoma Espinocelular representando menos del 2\,\% del total). Un modelo entrenado con una función de pérdida estándar tendería a ignorar las clases minoritarias, obteniendo una alta precisión total simplemente clasificando todo como ``Nevus'' o ``Benigno'', lo cual sería catastrófico en un entorno médico.
+
+Para resolver esto, se ha optado por un enfoque centrado en la \textbf{optimización algorítmica}. En lugar de alterar la cantidad de imágenes, se ha modificado la forma en la que el modelo ``siente el error'' durante el entrenamiento, obligándole a prestar más atención a los casos raros y difíciles.
+
+\subsection{Técnicas a nivel algorítmico y pérdidas específicas}
+
+Se han implementado tres mecanismos matemáticos complementarios para asegurar que el modelo aprenda con la misma intensidad de todas las categorías:
+
+\begin{enumerate}
+	\item \textbf{Pesos por Clase (\textit{Class Weights}) mediante Frecuencia Inversa.} Se ha aplicado un factor de ponderación a la función de pérdida multiclase. Este factor se calcula automáticamente como la inversa de la frecuencia de cada clase. De este modo, el error cometido al clasificar erróneamente una imagen de una clase rara (como el SCC) se multiplica por un valor mucho mayor que el error en una clase común (como el BG). Esto equilibra el gradiente matemático, permitiendo que las clases minoritarias tengan el mismo peso específico en la actualización de los pesos de la red.
+	
+	\item \textbf{\textit{Focal Loss} con Parámetro $\gamma$ (\textit{Head} B).} Para la clasificación multiclase, se ha sustituido la entropía cruzada tradicional por la \textit{Focal Loss}. Esta función introduce un factor modulador $(1 - p_t)^\gamma$ que reduce la contribución de los ejemplos ``fáciles'' (aquellos que la red ya clasifica con alta confianza) y se centra en los ejemplos ``difíciles'' o ambiguos. El parámetro $\gamma$ (ajustado mediante optimización bayesiana entre 2.0 y 5.0) controla la agresividad de este enfoque, permitiendo que la red se especialice en los detalles sutiles que diferencian, por ejemplo, un melanoma de una lesión queratósica benigna.
+	
+	\item \textbf{\texttt{BCEWithLogitsLoss} con Factor de Seguridad Clínico (\textit{Head} A).} Para la cabeza binaria, se utiliza una pérdida de entropía cruzada binaria ponderada. Se ha introducido un \textbf{Factor de Seguridad} manual que multiplica el castigo por falso negativo. En términos clínicos, esto significa que el modelo ``sufre'' mucho más si etiqueta un cáncer como benigno que si comete el error inverso. Esto garantiza una alta sensibilidad (\textit{Recall}), fundamental para un sistema de triaje.
+\end{enumerate}
+
+\subsection{Técnicas a nivel de datos (Descartadas)}
+
+Durante la fase de diseño, se consideraron diversas estrategias clásicas de balanceo de datos, pero fueron descartadas por los siguientes motivos técnicos:
+
+\begin{itemize}
+	\item \textbf{Sobremuestreo (\textit{Random Oversampling}).} Consiste en duplicar imágenes de las clases minoritarias. Se descartó porque, en modelos de alta capacidad como el \textit{Vision Transformer} (ViT), esta técnica induce rápidamente al sobreajuste (\textit{overfitting}). El modelo termina memorizando los píxeles exactos de las pocas imágenes repetidas en lugar de aprender características clínicas generales.
+	
+	\item \textbf{Submuestreo (\textit{Random Undersampling}).} Consiste en eliminar imágenes de la clase mayoritaria. Se descartó por la pérdida masiva de información. La clase benigna BG es extremadamente heterogénea; eliminar 80.000 imágenes de esta clase privaría al modelo de conocer la enorme variabilidad de la piel sana y otras lesiones irrelevantes, aumentando los falsos positivos.
+	
+	\item \textbf{SMOTE y técnicas de generación sintética.} Herramientas como SMOTE generan muestras nuevas mediante la interpolación de vecinos cercanos. Aunque son eficaces en datos tabulares, en imágenes médicas generan artefactos visuales y ``ruido'' que no tienen base biológica real, lo que podría confundir los filtros convolucionales de la red y generar patrones diagnósticos inexistentes.
+\end{itemize}
+
+En conclusión, la combinación de pesos por clase y \textit{Focal Loss} permite aprovechar el 100\,\% del \textit{dataset} original sin introducir sesgos de memorización ni perder la riqueza visual de las clases mayoritarias.
+
+\section{Estrategias de Aprendizaje: De Ramas Expertas a Fusión Multimodal}
+
+El entrenamiento del sistema propuesto no se realiza en un solo bloque, sino mediante un proceso de desarrollo jerárquico. Primero se optimizan tres "modelos expertos" de forma independiente para cada modalidad de información y, posteriormente, estos se integran en una arquitectura híbrida final. Debido a la naturaleza dispar de los datos, cada componente requiere una estrategia de aprendizaje adaptada.
+
+\subsection{Entrenamiento Individual de las Ramas Expertas}
+
+Antes de la integración final, cada rama fue entrenada por separado para asegurar que los extractores de características fuesen capaces de interpretar sus respectivos dominios:
+
+\begin{itemize}
+	\item \textbf{Rama RGB (Híbrida ViT + ResNet):} Es la única que emplea \textit{Transfer Learning} desde ImageNet. Debido a la complejidad de las imágenes a color, se utilizó el protocolo \textbf{LP-FT} (congelación inicial y posterior ajuste fino) y \textbf{Tasas de Aprendizaje Diferenciales} para adaptar los filtros genéricos a la patología cutánea. El resultado es un "experto" en texturas y colores dermatoscópicos.
+	\item \textbf{Rama ARP (Coordenadas Polares):} Se entrenó mediante \textbf{Aprendizaje desde Cero} (\textit{Training from scratch}). Al ser un dominio geométrico nuevo (no natural), la red tuvo que aprender de forma pura a identificar irregularidades en los bordes y asimetrías radiales sin sesgos previos de otras bases de datos.
+	\item \textbf{Rama de Metadatos (MLP):} Al tratarse de datos tabulares sencillos, se entrenó desde cero para correlacionar variables demográficas (edad, sexo, ubicación) con la probabilidad diagnóstica previa.
+\end{itemize}
+
+\subsection{Fusión y Prevención del Olvido Catastrófico Multimodal}
+
+Una vez obtenidos los tres modelos expertos, estos se integran en el modelo híbrido final. En este punto surge de nuevo el riesgo del \textbf{Olvido Catastrófico}. Las ramas expertas ya tienen un conocimiento "maduro" sobre sus datos, pero la nueva cabeza de clasificación final (\textit{Head} A y B) nace con pesos aleatorios.
+
+Si entrenáramos todo el conjunto desde el segundo uno, el error masivo de la cabeza final se propagaría hacia atrás, "contaminando" y destruyendo el conocimiento especializado que tanto costó conseguir en las ramas expertas.
+
+\subsection{Protocolo LP-FT Global: El Blindaje de los Expertos}
+
+Para integrar las ramas sin degradar su rendimiento, el modelo final repite el protocolo de entrenamiento en dos fases:
+
+\begin{enumerate}
+	\item \textbf{Fase 1: \textit{Linear Probing} (LP) de Fusión.} Se congelan las tres ramas expertas por completo. Actúan como extractores de características estáticos. El optimizador solo actualiza los pesos de la nueva cabeza de fusión. Esto permite que el sistema aprenda a combinar la información de los tres mundos (RGB, ARP y Metadatos) sin alterar la "vista" interna de cada experto.
+	\item \textbf{Fase 2: \textit{Fine-Tuning} (FT) Holístico.} Una vez que la cabeza final comprende cómo ponderar cada rama, se descongelan todos los parámetros. Toda la arquitectura se ajusta como un único organismo para maximizar la precisión diagnóstica global.
+\end{enumerate}
+
+\subsection{Configuración de Tasas de Aprendizaje Diferenciales (DLR)}
+
+En la fase de ajuste fino del modelo final, la sensibilidad de cada componente dicta su velocidad de aprendizaje. Se ha diseñado un esquema de DLR de tres niveles para proteger la estabilidad del sistema:
+
+\begin{itemize}
+	\item \textbf{Nivel 1 --- Alta Velocidad (\textit{LR Base}):} Aplicado a las cabezas de clasificación finales y a la red de metadatos. Son las capas que más deben cambiar para aprender la tarea de fusión final.
+	\item \textbf{Nivel 2 --- Velocidad Moderada (\textit{LR Base} / 10):} Aplicado a las ramas convolucionales (ResNet18 y la CNN de ARP). Al ser redes robustas, se les permite un ajuste más ágil de sus filtros de bordes y formas.
+	\item \textbf{Nivel 3 --- Velocidad Restrictiva (\textit{LR Base} / 100):} Aplicado exclusivamente al Transformador de Visión (ViT). Debido a su tendencia al sobreajuste y a la complejidad de sus mapas de atención, el ViT solo se ajusta con una tasa de aprendizaje mínima, asegurando que su comprensión global de la imagen no se desestabilice por el aporte de las otras ramas.
+\end{itemize}
+\subsection{Optimización Computacional y de Memoria}
+
+Entrenar simultáneamente un Transformador de Visión y una red convolucional exige recursos de memoria de vídeo (VRAM) excepcionales. Para viabilizar el entrenamiento de este modelo masivo en \textit{hardware} local, se han implementado dos estrategias críticas a nivel de ingeniería de \textit{software}:
+
+\begin{itemize}
+	\item \textbf{Precisión Mixta Automática (AMP).} Mediante el uso de la tecnología \textit{Automatic Mixed Precision} de PyTorch, la red evalúa dinámicamente qué operaciones matemáticas requieren precisión de 32 bits (FP32) y cuáles pueden resolverse con 16 bits (FP16) sin pérdida de exactitud. Esto reduce a la mitad la huella de memoria durante el paso hacia adelante (\textit{forward pass}) y acelera sustancialmente el cálculo numérico en la tarjeta gráfica.
+	
+	\item \textbf{Carga de Datos Asíncrona (\textit{Prefetching}).} Para evitar que la Unidad de Procesamiento Gráfico (GPU) permanezca inactiva esperando a que el disco duro lea las imágenes, se ha implementado un sistema multiproceso (\texttt{num\_workers}). Mientras la GPU entrena con un lote de imágenes, los núcleos del procesador (CPU) cargan y aplican las transformaciones matemáticas al siguiente lote en segundo plano. Adicionalmente, el uso de memoria anclada (\texttt{pin\_memory}) crea un túnel de acceso directo a la memoria PCI-Express, acelerando la transferencia de tensores entre el sistema y la GPU.
+\end{itemize}
+
+\section{Validación y Robustez: Validación Cruzada Estratificada}
+
+El desarrollo de un modelo de aprendizaje profundo en el ámbito médico carece de validez si su rendimiento no puede ser garantizado ante datos clínicos no vistos previamente. Un error común en arquitecturas de alta capacidad es la memorización del conjunto de entrenamiento (\textit{overfitting}), lo que produce métricas ilusoriamente altas que colapsan en la práctica real. Para mitigar este riesgo y certificar la fiabilidad del sistema, se ha descartado la tradicional división estática de datos (por ejemplo, 80\,\% entrenamiento y 20\,\% validación) en favor de una \textbf{Validación Cruzada de cinco particiones} (\textit{5-Fold Cross-Validation}). 
+
+Este método divide el conjunto de datos en cinco subconjuntos independientes, entrenando el modelo cinco veces distintas y utilizando en cada iteración un subconjunto diferente como validación. Esto asegura una evaluación estadística robusta, garantizando que el rendimiento final (calculado como la media de las cinco ejecuciones) sea independiente de la porción de datos seleccionada.
+
+Adicionalmente, esta validación cruzada incorpora dos restricciones fundamentales para el entorno médico:
+
+\begin{itemize}
+	\item \textbf{Estratificación (\textit{Stratified}).} Asegura que la proporción original de las seis clases maestras se mantenga constante en todos los subconjuntos. Dado el extremo desbalanceo del \textit{dataset}, esto garantiza que ninguna partición de validación se quede sin representación de las clases más críticas y minoritarias (como el Melanoma o el SCC).
+	
+	\item \textbf{Aislamiento hermético de pacientes (\textit{Group}).} En conjuntos de datos dermatológicos, es frecuente tener múltiples fotografías del mismo paciente (diferentes lesiones o distintos ángulos anatómicos). Si imágenes del mismo paciente cayeran simultáneamente en el conjunto de entrenamiento y de validación, se produciría una ``fuga de datos'' (\textit{Data Leakage}). El modelo podría aprender a identificar al paciente (por su tono de piel, vello o fondo de la imagen) en lugar de la patología. Para evitarlo, la partición se ha agrupado forzosamente utilizando el identificador único del paciente (\textit{Master Group ID}), asegurando un aislamiento hermético: el modelo nunca se evalúa con lesiones de un paciente que ya ha ``visto'' durante su entrenamiento.
+\end{itemize}
+
+
+\section{Búsqueda y Configuración de Hiperparámetros}
+
+A diferencia de los pesos y sesgos de una red neuronal, que se ajustan automáticamente de forma interna mediante el cálculo de gradientes (retropropagación), los \textbf{hiperparámetros} son las variables de configuración externas que gobiernan cómo se lleva a cabo ese proceso de aprendizaje.
+
+La correcta sintonización de estos valores es la frontera que separa a un modelo que sufre subajuste (\textit{underfitting}, incapacidad de extraer patrones) de uno que cae en el sobreajuste (\textit{overfitting}, memorización estéril de los datos de entrenamiento). Entre los hiperparámetros más críticos que se han optimizado en este proyecto destacan:
+
+\begin{itemize}
+	\item \textbf{Tasa de Aprendizaje (\textit{Learning Rate} --- LR).} Determina el tamaño del ``paso'' que da el optimizador al actualizar los pesos. Un LR muy alto provoca divergencia e inestabilidad matemática, mientras que un LR muy bajo hace que el modelo se estanque en mínimos locales o tarde un tiempo inasumible en converger.
+	
+	\item \textbf{Decaimiento de Pesos (\textit{Weight Decay}).} Actúa como una penalización de regularización L2. Fuerza a la red a mantener sus pesos en valores pequeños, limitando su complejidad matemática y siendo la principal barrera de defensa contra el sobreajuste, especialmente vital en arquitecturas de alta capacidad como los Transformadores de Visión (ViT).
+	
+	\item \textbf{\textit{Dropout}.} Apaga aleatoriamente un porcentaje de neuronas en cada paso de entrenamiento, obligando a la red a no depender de características individuales aisladas y fomentando el aprendizaje de representaciones más distribuidas y robustas.
+	
+	\item \textbf{Parámetro Gamma ($\gamma$).} Específico de la función \textit{Focal Loss}, modula la agresividad con la que la red ignora las imágenes clínicas sencillas para focalizar sus esfuerzos matemáticos en los casos diagnósticos ambiguos.
+\end{itemize}
+
+\subsection{Estrategias de búsqueda descartadas}
+
+Encontrar la combinación perfecta de hiperparámetros es un desafío de alta complejidad debido a lo que en la literatura científica se conoce como ``la maldición de la dimensionalidad''. Durante el diseño del marco experimental, se descartaron las dos estrategias más tradicionales de optimización:
+
+\begin{enumerate}
+	\item \textbf{Búsqueda en Cuadrícula (\textit{Grid Search}).} Consiste en probar exhaustivamente todas las combinaciones posibles de una lista predefinida de valores. Se descartó por ser computacionalmente inviable. Para un espacio de búsqueda con cinco parámetros y cinco valores posibles cada uno, la red tendría que entrenarse desde cero 3125 veces. En modelos profundos que requieren uso intensivo de GPU, esto supondría meses de procesamiento.
+	
+	\item \textbf{Búsqueda Aleatoria (\textit{Random Search}).} Muestrea puntos al azar dentro del espacio de hiperparámetros. Aunque estadísticamente supera al \textit{Grid Search} al explorar una mayor variedad de valores continuos, su naturaleza es completamente ``ciega''. No tiene memoria: si probar un \textit{Learning Rate} alto resulta en un colapso del modelo, el algoritmo es incapaz de aprender de ese fallo y podría volver a seleccionar valores similares en el futuro.
+\end{enumerate}
+
+\subsection{Optimización Bayesiana con Optuna}
+
+Para superar las limitaciones computacionales y realizar una exploración inteligente del espacio de hiperparámetros, se ha implementado un sistema de \textbf{Optimización Bayesiana} utilizando el \textit{framework} avanzado \textbf{Optuna}.
+
+A diferencia de las búsquedas ciegas, la optimización bayesiana utiliza un modelo probabilístico (en este estudio, el estimador TPE o \textit{Tree-structured Parzen Estimator}). Este algoritmo actúa como un ``investigador'' que aprende de sus errores pasados: analiza los resultados métricos (\textit{F1-Score}) de los experimentos (\textit{trials}) anteriores y construye un mapa de probabilidad para decidir qué región del hiperespacio tiene mayor potencial de éxito para el siguiente intento. Esto genera un equilibrio matemático perfecto entre la \textit{exploración} de nuevas configuraciones y la \textit{explotación} de las regiones que ya han demostrado buenos resultados.
+
+Adicionalmente, el uso de Optuna ha permitido integrar dos estrategias clave de optimización computacional en la metodología:
+
+\begin{itemize}
+	\item \textbf{Podado Dinámico (\textit{Pruning}).} Se ha integrado el algoritmo \textit{Median Pruner}. Este mecanismo monitoriza el rendimiento de la red neuronal época a época durante un experimento. Si en la época 3 (por ejemplo) la red tiene un rendimiento drásticamente inferior a la mediana histórica de los experimentos previos en esa misma etapa, Optuna corta la ejecución de inmediato (\textit{Trial Pruned}). Esto evita desperdiciar horas de GPU completando entrenamientos que nacieron matemáticamente condenados al fracaso.
+	
+	\item \textbf{Acotamiento por Importancia (Análisis fANOVA).} La metodología de búsqueda no se ha realizado en un solo paso. Inicialmente, se ejecutó un estudio exploratorio amplio con múltiples variables. Utilizando la herramienta de análisis de varianza funcional (fANOVA) integrada en Optuna, se evaluó empíricamente la importancia de cada hiperparámetro. Al detectar que parámetros como las épocas de congelación inicial o los divisores finos del LR tenían una importancia nula a corto plazo frente al peso abrumador del \textit{Weight Decay} y el \textit{Learning Rate} base, se fijaron los parámetros de impacto nulo a valores estándar de la literatura. Esto redujo drásticamente las dimensiones del problema, permitiendo al algoritmo bayesiano destinar todo su poder de cómputo a afinar milimétricamente las tres variables que realmente dictaminaban la capacidad de diagnóstico del sistema.
+\end{itemize}
 
 \section{Flujo General del Sistema (\textit{Pipeline} de ejecución)}
-% Diagrama lógico del proceso completo.
+
+Para finalizar la descripción metodológica, se presenta el \textit{pipeline} de ejecución secuencial que integra todos los componentes descritos anteriormente. El sistema no opera como un bloque monolítico, sino como una cadena de procesos orquestados que transforman los datos brutos en una decisión clínica fundamentada.
+
+Este flujo general se divide en cuatro etapas maestras que garantizan la integridad y la optimización del modelo:
+
+\begin{enumerate}
+	\item \textbf{Etapa de Ingesta y Armonización de Datos.} El proceso comienza con la carga de las bases de datos originales. En este punto, se realiza la limpieza de registros sin imagen y se ejecutan las tres rutas de transformación:
+	\begin{itemize}
+		\item Normalización de metadatos clínicos.
+		\item Redimensionamiento y normalización del espectro RGB.
+		\item Transformación topológica al espacio polar (ARP).
+	\end{itemize}
+	
+	\item \textbf{Etapa de Configuración y Optimización Inteligente.} Antes del entrenamiento final, el sistema entra en un ciclo de \textbf{Optimización Bayesiana con Optuna}. Durante esta etapa, se realizan múltiples ejecuciones rápidas (submuestreando el \textit{dataset} al 25\,\% para ahorrar tiempo) con el objetivo de encontrar la combinación ideal de \textit{Learning Rate}, \textit{Weight Decay} y el parámetro $\gamma$ (gamma) de la \textit{Focal Loss}. Solo una vez hallados estos valores óptimos, se procede al entrenamiento definitivo.
+	
+	\item \textbf{Etapa de Entrenamiento en Bucle \textit{K-Fold}.} Se inicia la validación cruzada de cinco particiones. Para cada uno de los cinco \textit{folds}, el sistema ejecuta el protocolo de aprendizaje en dos fases:
+	\begin{itemize}
+		\item \textbf{Fase LP (Épocas 1--5):} Entrenamiento exclusivo de las cabezas de clasificación con los \textit{backbones} congelados.
+		\item \textbf{Fase FT (Épocas 6--40):} Entrenamiento global de toda la arquitectura multimodal utilizando tasas de aprendizaje diferenciales (DLR) y precisión mixta (AMP).
+	\end{itemize}
+	
+	\item \textbf{Etapa de Consolidación y Evaluación Clínica.} Tras completar los cinco ciclos de entrenamiento, el sistema consolida los resultados. Se calculan las métricas de rendimiento tanto para el \textbf{\textit{Head} A} (priorizando la sensibilidad para el triaje) como para el \textbf{\textit{Head} B} (evaluando la precisión diagnóstica multiclase). Finalmente, se generan las matrices de confusión y las curvas ROC que permiten interpretar el comportamiento del modelo ante cada estirpe tumoral.
+\end{enumerate}
+
+Este diseño de \textit{pipeline} asegura que cada decisión tomada por la Inteligencia Artificial ha pasado por un filtro de validación cruzada, una optimización estadística de sus parámetros y un entrenamiento respetuoso con el conocimiento previo de la red, garantizando así un sistema final de alta fidelidad clínica y técnica.
+
+% =====================================================================
+% DIAGRAMA EN TIKZ
+% =====================================================================
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		node distance=1.2cm and 0cm,
+		box/.style={rectangle, draw=black!70, thick, rounded corners=1ex, text width=13cm, align=center, minimum height=1.5cm, fill=blue!5, font=\small},
+		arrow/.style={thick, -{Stealth[scale=1.2]}}
+		]
+		
+		% Nodos del diagrama
+		\node (ingesta) [box] {\textbf{1. Ingesta y Armonización de Datos} \\ Limpieza de registros $\rightarrow$ Normalización Clínica, Espectro RGB y Espacio Polar (ARP).};
+		
+		\node (optuna) [box, below=of ingesta] {\textbf{2. Optimización Bayesiana (Optuna)} \\ Submuestreo al 25\,\% $\rightarrow$ Búsqueda de \textit{Learning Rate}, \textit{Weight Decay} y parámetro $\gamma$.};
+		
+		\node (kfold) [box, below=of optuna] {\textbf{3. Entrenamiento en Bucle \textit{K-Fold} (5 particiones)} \\ Fase \textit{Linear Probing} (Épocas 1--5) $\rightarrow$ Fase \textit{Fine-Tuning} global (Épocas 6--40).};
+		
+		\node (eval) [box, below=of kfold] {\textbf{4. Consolidación y Evaluación Clínica} \\ Cálculo de métricas (\textit{Head} A y \textit{Head} B), Matrices de Confusión y Curvas ROC.};
+		
+		% Flechas de conexión
+		\draw [arrow] (ingesta) -- (optuna);
+		\draw [arrow] (optuna) -- (kfold);
+		\draw [arrow] (kfold) -- (eval);
+		
+	\end{tikzpicture}
+	\caption{Diagrama de flujo representativo del \textit{pipeline} de ejecución del sistema propuesto.}
+	\label{fig:pipeline_ejecucion}
+\end{figure}
