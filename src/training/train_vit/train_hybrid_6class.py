@@ -28,18 +28,18 @@ def train_hybrid_kfold():
     # =================================================================
     RESUME_TRAINING = False  # 🚩 CAMBIAR A TRUE PARA REANUDAR
     RUN_ID_A_REANUDAR = "run_Hybrid_Final_20260428_XXXXXX" # 📂 Nombre de la carpeta en experiments/
-    FOLD_A_EMPEZAR = 1  # 📂 Fold donde se quedó (1, 2, 3...)
+    FOLD_A_EMPEZAR = 1 
     
     CSV_PATH = "C:/TFG/data/Original_Data/ISIC_FINAL/train.csv"
     IMAGES_DIR = "C:/TFG/src/data/processed/images_RGB_ISIC"
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     NUM_FOLDS = 5
-    EPOCHS_LP = 20     
-    EPOCHS_FT = 120    
+    EPOCHS_LP = 20
+    EPOCHS_FT = 120
     EPOCHS_TOTAL = EPOCHS_LP + EPOCHS_FT
     
-    BATCH_SIZE = 32   
+    BATCH_SIZE = 32
     BASE_LR = 0.00041544058403611043
     WD = 0.0012719398900890863
     GAMMA = 2.0
