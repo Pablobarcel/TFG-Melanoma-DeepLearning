@@ -9,12 +9,13 @@ from torch.utils.data import Dataset
 
 class ARPDataset6Class(Dataset):
     """
-    Dataset para imágenes ARP (Angular Radial Partitioning) Adaptado a 6 Clases.
+    Dataset para imágenes ARP (Angular Radial Partitioning) Adaptado a 4 Clases.
     Devuelve las imágenes en Escala de Grises (1 Canal).
     """
     def __init__(self, df, images_dir: str, transforms=None):
         self.images_dir = Path(images_dir)
         self.transforms = transforms
+        self.label_map = {0:0, 4:0, 5:0, 1:1, 2:2, 3:3} # NV, BKL, BG -> 0
         self.malignant_classes = [1, 2, 3]
 
         if not self.images_dir.exists():
@@ -57,9 +58,8 @@ class ARPDataset6Class(Dataset):
             image = self.transforms(image)
 
         # Obtener etiquetas dinámicamente
-        target_multi = int(row['target'])
-        
-        y_headB = int(row['head_B_label']) if 'head_B_label' in row else target_multi
+        original_label = int(row['target'])
+        y_headB = self.label_map[original_label] # Mapeo a 4 clases
         
         if 'head_a_label' in row:
             y_headA = float(row['head_a_label'])

@@ -6,10 +6,10 @@ from torchvision import models
 
 class HybridRGBModel6Class(nn.Module):
     """
-    Arquitectura Híbrida: ResNet18 (Textura/Local) + ViT-Base (Contexto Global).
-    Concatenación final: 512 + 768 = 1280 dimensiones.
+    Arquitectura Híbrida LIGERA: ResNet18 (512) + ViT-Tiny (192).
+    Concatenación final: 512 + 192 = 704 dimensiones.
     """
-    def __init__(self, num_classes_headB=6, pretrained=True, dropout_rate = 0.4):
+    def __init__(self, num_classes_headB=4, pretrained=True, dropout_rate = 0.4):
         super().__init__()
 
         # --- Rama CNN: ResNet18 (Feature Dim: 512) ---
@@ -17,33 +17,31 @@ class HybridRGBModel6Class(nn.Module):
         self.cnn_backbone = nn.Sequential(*list(resnet.children())[:-2])
         self.cnn_pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        # --- Rama ViT: Vision Transformer Base (Feature Dim: 768) ---
-        # Usamos patch16_224 para compatibilidad total con tus imágenes
+        # --- Rama ViT LIGERA: ViT-Tiny (Feature Dim: 192) ---
         self.vit_backbone = timm.create_model(
-            'vit_base_patch16_224', 
+            'vit_tiny_patch16_224', # <--- Cambio a Tiny
             pretrained=pretrained, 
-            num_classes=0 # Extractor de rasgos puro
+            num_classes=0 
         )
 
-        # --- Fusión (Late Fusion Interna) ---
-        # 512 (CNN) + 768 (ViT) = 1280
-        self.fusion_dim = 1280
+        # --- Fusión (ResNet 512 + ViT-Tiny 192 = 704) ---
+        self.fusion_dim = 512 + 192 # <--- Nueva dimensión de fusión
         self.dropout = nn.Dropout(p=dropout_rate)
 
-        # Dual-Head
+        # Dual-Head (4 clases en Head B)
         self.head_A = nn.Linear(self.fusion_dim, 1)
         self.head_B = nn.Linear(self.fusion_dim, num_classes_headB)
 
     def forward(self, x):
         # 1. Rama CNN
         feat_cnn = self.cnn_backbone(x)
-        feat_cnn = self.cnn_pool(feat_cnn).view(x.size(0), -1) # [B, 512]
+        feat_cnn = self.cnn_pool(feat_cnn).view(x.size(0), -1) 
 
         # 2. Rama ViT
-        feat_vit = self.vit_backbone(x) # [B, 768]
+        feat_vit = self.vit_backbone(x) 
 
         # 3. Concatenación
-        combined = torch.cat((feat_cnn, feat_vit), dim=1) # [B, 1280]
+        combined = torch.cat((feat_cnn, feat_vit), dim=1) 
         combined = self.dropout(combined)
 
         return self.head_A(combined), self.head_B(combined)

@@ -26,8 +26,8 @@ def train_hybrid_kfold():
     # =================================================================
     # 🔧 CONFIGURACIÓN DEL EXPERIMENTO Y REANUDACIÓN
     # =================================================================
-    RESUME_TRAINING = False  # 🚩 CAMBIAR A TRUE PARA REANUDAR
-    RUN_ID_A_REANUDAR = "run_Hybrid_Final_20260428_XXXXXX" # 📂 Nombre de la carpeta en experiments/
+    RESUME_TRAINING = FALSE  # 🚩 CAMBIAR A TRUE PARA REANUDAR
+    RUN_ID_A_REANUDAR = None #"" # 📂 Nombre de la carpeta en experiments/
     FOLD_A_EMPEZAR = 1 
     
     CSV_PATH = "C:/TFG/data/Original_Data/ISIC_FINAL/train.csv"
@@ -45,13 +45,13 @@ def train_hybrid_kfold():
     GAMMA = 2.0
 
     config_logger = {
-        "model_type": "Hybrid_ResNet18_ViT",
+        "model_type": "Hybrid_ResNet18_ViTTiny",
         "lr": BASE_LR, "batch_size": BATCH_SIZE, "epochs_total": EPOCHS_TOTAL
     }
 
     # Inicialización del Logger con soporte para reanudación de carpeta
     logger = ExperimentLogger(
-        experiment_name="rgb_hybrid_kfold", 
+        experiment_name="rgb_hybrid_tiny_kfold", 
         config=config_logger,
         run_name=RUN_ID_A_REANUDAR if RESUME_TRAINING else None
     )
@@ -74,7 +74,7 @@ def train_hybrid_kfold():
                 "train_acc_A": 0.0, "val_acc_A": 0.0, "train_rec_A": 0.0, "val_rec_A": 0.0, "train_auc_A": 0.0, "val_auc_A": 0.0,
                 "train_acc_B": 0.0, "val_acc_B": 0.0, "train_rec_B": 0.0, "val_rec_B": 0.0, "train_f1_B": 0.0, "val_f1_B": 0.0,
                 "cm_train_A": np.zeros((2, 2)), "cm_val_A": np.zeros((2, 2)),
-                "cm_train_B": np.zeros((6, 6)), "cm_val_B": np.zeros((6, 6))
+                "cm_train_B": np.zeros((4, 4)), "cm_val_B": np.zeros((4, 4))
             } for epoch in range(EPOCHS_TOTAL)
         }
 
@@ -95,7 +95,7 @@ def train_hybrid_kfold():
         train_loader = DataLoader(RGBDataset6Class(df_train, IMAGES_DIR, get_train_transforms()), batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
         val_loader = DataLoader(RGBDataset6Class(df_val, IMAGES_DIR, get_eval_transforms()), batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
 
-        model = HybridRGBModel6Class(num_classes_headB=6, pretrained=True).to(DEVICE)
+        model = HybridRGBModel6Class(num_classes_headB=4, pretrained=True).to(DEVICE)
         criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=2.0, device=DEVICE)
         w_multi = compute_class_weights(df_train, DEVICE, label_col="target")
         criterion_B = FocalLoss(weight=w_multi, gamma=GAMMA)

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class MetadataMLP(nn.Module):
-    def __init__(self, input_dim=13, num_classes_multiclass=6):
+    def __init__(self, input_dim=13, num_classes_multiclass=4):
         super(MetadataMLP, self).__init__()
         
         # Extractor de características compartido
@@ -21,7 +21,7 @@ class MetadataMLP(nn.Module):
         # Head A: Binario (Benigno vs Maligno) -> 1 salida (Logit para Sigmoid)
         self.head_A = nn.Linear(64, 1)
         
-        # Head B: Multiclase (6 enfermedades) -> 6 salidas (Logits para CrossEntropy)
+        # Head B: Multiclase (4 enfermedades) -> 4 salidas (Logits para CrossEntropy)
         self.head_B = nn.Linear(64, num_classes_multiclass)
 
     def forward(self, x):

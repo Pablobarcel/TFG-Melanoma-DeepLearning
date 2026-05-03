@@ -9,7 +9,7 @@ class ARPCNN6Class(nn.Module):
     Entrada: Tensor de (Batch, 1, 224, 224)
     Configurado para Arquitectura Dual-Head de 6 Clases.
     """
-    def __init__(self, num_classes_multiclass=6):
+    def __init__(self, num_classes_multiclass=4):
         super(ARPCNN6Class, self).__init__()
         
         # Bloque 1: 224x224 -> 112x112

@@ -32,6 +32,12 @@ class MetadataDataset(Dataset):
         
         # 4. A los valores que ERAN -1.0, les ponemos el nuevo centinela -5.0 DE GOLPE
         self.df.loc[~valid_mask, 'age_approx'] = -5.0
+        
+        # DEFINIR EL NUEVO MAPEO
+        # Original: 0:NV, 1:MEL, 2:BCC, 3:SCC, 4:BKL, 5:BG
+        # Nuevo: 0:BEN (NV, BKL, BG), 1:MEL, 2:BCC, 3:SCC
+        self.label_map = {0:0, 4:0, 5:0, 1:1, 2:2, 3:3}
+        self.malignant_classes = [1, 2, 3]
 
     def __len__(self):
         return len(self.df)
@@ -40,16 +46,11 @@ class MetadataDataset(Dataset):
         row = self.df.iloc[idx]
         features = torch.tensor(row[self.feature_cols].values.astype('float32'))
         
-        # --- LÓGICA DE ETIQUETAS UNIFICADA ---
-        target_multi = int(row['target'])
+        # APLICAR MAPEO DINÁMICO
+        original_label = int(row['target'])
+        y_headB = self.label_map[original_label]
         
-        # Leemos head_B_label si existe, si no, usamos el target base por seguridad
-        y_headB = int(row['head_B_label']) if 'head_B_label' in row else target_multi
-        
-        # Leemos head_a_label si existe, si no, lo derivamos dinámicamente
-        if 'head_a_label' in row:
-            y_headA = float(row['head_a_label'])
-        else:
-            y_headA = 1.0 if y_headB in self.malignant_classes else 0.0
+        # Head A sigue siendo binario basado en si la nueva etiqueta es 1, 2 o 3
+        y_headA = 1.0 if y_headB in self.malignant_classes else 0.0
             
         return features, torch.tensor(y_headA, dtype=torch.float), torch.tensor(y_headB, dtype=torch.long)

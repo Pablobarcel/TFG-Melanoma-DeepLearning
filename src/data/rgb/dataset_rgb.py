@@ -10,6 +10,7 @@ class RGBDataset6Class(Dataset):
     def __init__(self, df, images_dir: str, transforms=None):
         self.images_dir = Path(images_dir)
         self.transforms = transforms
+        self.label_map = {0:0, 4:0, 5:0, 1:1, 2:2, 3:3}
         self.malignant_classes = [1, 2, 3]
 
         print(f"🔍 Verificando integridad RGB en {self.images_dir.name}...")
@@ -38,7 +39,7 @@ class RGBDataset6Class(Dataset):
         if self.transforms is not None:
             image = self.transforms(image)
 
-        y_headB = int(row['head_B_label']) if 'head_B_label' in row else int(row['target'])
+        y_headB = self.label_map[int(row['target'])]
         y_headA = float(row['head_a_label']) if 'head_a_label' in row else (1.0 if y_headB in self.malignant_classes else 0.0)
 
         return image, torch.tensor(y_headA, dtype=torch.float), torch.tensor(y_headB, dtype=torch.long)

@@ -35,8 +35,8 @@ def metrics_headA(y_true, y_pred, y_prob):
 # ==========================================================
 def metrics_headB(y_true, y_pred):
     results = {}
-    class_labels = [0, 1, 2, 3, 4, 5]
-    class_names = ["NV", "MEL", "BCC", "SCC", "BKL", "BG"]
+    class_labels = [0, 1, 2, 3] # Antes era 6
+    class_names = ["BEN", "MEL", "BCC", "SCC"] # Agrupados
 
     results["accuracy"] = accuracy_score(y_true, y_pred)
     results["macro_f1"] = f1_score(y_true, y_pred, average="macro", zero_division=0)

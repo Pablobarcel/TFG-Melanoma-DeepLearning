@@ -97,7 +97,7 @@ class ExperimentLogger:
             )
 
         # --- HEAD B (Multiclase - 6 clases) ---
-        class_names_b = ["NV", "MEL", "BCC", "SCC", "BKL", "BG"]
+        class_names_b = ["BEN", "MEL", "BCC", "SCC"]
         for phase, m in [("Train", train_metrics), ("Val", val_metrics)]:
             self.writer.add_scalar(f"Metrics_HeadB_{fold_prefix}/{phase}/Accuracy", m["headB"]["accuracy"], epoch)
             self.writer.add_scalar(f"Metrics_HeadB_{fold_prefix}/{phase}/Macro_F1", m["headB"]["macro_f1"], epoch)

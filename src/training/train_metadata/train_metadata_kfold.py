@@ -56,7 +56,7 @@ def train_full_kfold():
             "train_acc_A": 0.0, "val_acc_A": 0.0, "train_rec_A": 0.0, "val_rec_A": 0.0, "train_auc_A": 0.0, "val_auc_A": 0.0,
             "train_acc_B": 0.0, "val_acc_B": 0.0, "train_rec_B": 0.0, "val_rec_B": 0.0, "train_f1_B": 0.0, "val_f1_B": 0.0,
             "cm_train_A": np.zeros((2, 2)), "cm_val_A": np.zeros((2, 2)),
-            "cm_train_B": np.zeros((6, 6)), "cm_val_B": np.zeros((6, 6))
+            "cm_train_B": np.zeros((4, 4)), "cm_val_B": np.zeros((4, 4))
         } for epoch in range(EPOCHS)
     }
 

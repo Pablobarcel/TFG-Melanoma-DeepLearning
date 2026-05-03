@@ -68,7 +68,7 @@ def train_arp_kfold():
             "train_acc_A": 0.0, "val_acc_A": 0.0, "train_rec_A": 0.0, "val_rec_A": 0.0, "train_auc_A": 0.0, "val_auc_A": 0.0,
             "train_acc_B": 0.0, "val_acc_B": 0.0, "train_rec_B": 0.0, "val_rec_B": 0.0, "train_f1_B": 0.0, "val_f1_B": 0.0,
             "cm_train_A": np.zeros((2, 2)), "cm_val_A": np.zeros((2, 2)),
-            "cm_train_B": np.zeros((6, 6)), "cm_val_B": np.zeros((6, 6))
+            "cm_train_B": np.zeros((4, 4)), "cm_val_B": np.zeros((4, 4))
         } for epoch in range(EPOCHS)
     }
 
@@ -92,7 +92,7 @@ def train_arp_kfold():
         train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
         val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
 
-        model = ARPCNN6Class(num_classes_multiclass=6).to(DEVICE)
+        model = ARPCNN6Class(num_classes_multiclass=4).to(DEVICE)
         
         # Configuración de Pérdidas
         criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=2.0, device=DEVICE)

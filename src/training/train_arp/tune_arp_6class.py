@@ -64,7 +64,7 @@ def objective(trial, csv_path, images_dir):
     # 2. CARGAR DATOS Y MODELO
     train_loader, val_loader, df_train = get_data_loaders(csv_path, images_dir, batch_size)
     
-    model = ARPCNN6Class(num_classes_multiclass=6).to(device)
+    model = ARPCNN6Class(num_classes_multiclass=4).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     
     # 3. CONFIGURACIÓN DE PÉRDIDAS

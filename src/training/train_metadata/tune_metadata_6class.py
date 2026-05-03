@@ -71,7 +71,7 @@ def objective(trial, csv_path):
     # =====================================================================
     train_loader, val_loader, df_train = get_data_loaders(csv_path, batch_size)
     
-    model = MetadataMLP(input_dim=13, num_classes_multiclass=6).to(device)
+    model = MetadataMLP(input_dim=13, num_classes_multiclass=4).to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     
     # =====================================================================

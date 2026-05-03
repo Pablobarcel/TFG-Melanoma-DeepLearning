@@ -75,7 +75,7 @@ def objective(trial, csv_path, images_dir):
     train_loader, val_loader, df_train = get_data_loaders(csv_path, images_dir, BATCH_SIZE)
 
     # 3. MODELO Y PÉRDIDAS
-    model = HybridRGBModel6Class(num_classes_headB=6, pretrained=True, dropout_rate=dropout_rate).to(DEVICE)
+    model = HybridRGBModel6Class(num_classes_headB=4, pretrained=True, dropout_rate=dropout_rate).to(DEVICE)
     
     criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=1.0, device=DEVICE)
     weights = compute_class_weights(df_train, DEVICE, label_col="target")
