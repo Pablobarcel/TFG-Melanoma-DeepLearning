@@ -12,20 +12,21 @@ def get_train_transforms():
     Optimizadas para preservar la semántica del color y simular la elasticidad.
     """
     return transforms.Compose([
+        transforms.RandomResizedCrop(size=224, scale=(0.8, 1.0), ratio=(0.9, 1.1)),
         transforms.RandomRotation(degrees=180),
         transforms.RandomHorizontalFlip(p=0.5),
         transforms.RandomVerticalFlip(p=0.5),
         
         # Simulación de la elasticidad de la piel (presión del dermatoscopio)
-        transforms.ElasticTransform(alpha=50.0, sigma=5.0), 
+        # transforms.ElasticTransform(alpha=50.0, sigma=5.0), 
         
         # Brillo/contraste para simular diferentes iluminaciones (SIN Hue)
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.0),
+        transforms.ColorJitter(brightness=0.15, contrast=0.15, saturation=0.1, hue=0.0),
         
         transforms.ToTensor(),
         
         # Random Erasing va SIEMPRE después de ToTensor. Simula pelos o reflejos.
-        transforms.RandomErasing(p=0.2, scale=(0.02, 0.15), ratio=(0.3, 3.3)),
+        transforms.RandomErasing(p=0.3, scale=(0.02, 0.2), ratio=(0.3, 3.3)),
         
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])

@@ -32,7 +32,7 @@ def auditoria_clinica_avanzada(csv_path):
     df_nulos = df_nulos[df_nulos['Nulos'] > 0].sort_values(by='Porcentaje (%)', ascending=False)
     
     if not df_nulos.empty:
-        print(df_nulos.head(20).to_string(formatters={'Porcentaje (%)': '{:.2f}%'.format}))
+        print(df_nulos.head(100).to_string(formatters={'Porcentaje (%)': '{:.2f}%'.format}))
         print("...")
     else:
         print("¡Increíble! No hay valores nulos en todo el dataset.")
@@ -184,7 +184,7 @@ def auditoria_clinica_avanzada(csv_path):
                         top_vals = labels
                         col_analizar = 'age_group'
                     else:
-                        top_vals = df[col].value_counts().head(4).index
+                        top_vals = df[col].value_counts().head(10).index
                         col_analizar = col
                         df_temp = df
 

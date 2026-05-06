@@ -78,7 +78,7 @@ def objective(trial, csv_path, images_dir):
     model = HybridRGBModel6Class(num_classes_headB=4, pretrained=True, dropout_rate=dropout_rate).to(DEVICE)
     
     criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=1.0, device=DEVICE)
-    weights = compute_class_weights(df_train, DEVICE, label_col="target")
+    weights = compute_class_weights(df_train, DEVICE, label_col="target", smoothing = 0.7)
     # Aplicamos el gamma sugerido por Optuna
     criterion_B = FocalLoss(weight=weights, gamma=gamma_val)
 

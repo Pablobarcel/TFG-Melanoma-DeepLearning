@@ -23,7 +23,7 @@ class FocalLoss(nn.Module):
         elif self.reduction == 'sum': return focal_loss.sum()
         else: return focal_loss
 
-def get_clinical_bce_loss(df, factor_seguridad=2.0, device='cuda'):
+def get_clinical_bce_loss(df, factor_seguridad=1.0, device='cuda'):
     """
     Calcula el desbalance binario y devuelve la función BCEWithLogitsLoss.
     Le da prioridad a no fallar en los cánceres.

@@ -7,31 +7,63 @@
 \chapter{Descripción y Exploración de los Datos}
 
 \section{Introducción}
+El diseño y la obtención de buenos resultados en cualquier modelo de redes neuronales depende en gran parte de la cantidad, calidad y organización de los datos. En este capítulo se describe el \emph{análisis exploratorio} que es la base para que nuestro modelo rinda a su mayor nivel: desde el estudio de la estructura, variables y distribución de los datos, hasta la selección del \textit{ground truth} y las clases objetivo.
+
+Los datos han sido obtenidos desde \textbf{ISIC Archive} (\textit{International Skin Imaging Collaboration}), una de las bases de datos clínicas y académicas más grandes del mundo, diseñada para el estudio de lesiones cutáneas y sobre todo para el entrenamiento de algoritmos de Inteligencia Artificial como el que se esta desarrollando. La base de datos de \textbf{ISIC Archive} consiguió centralizar y estandarizar las imágenes, que por entonces, se encontraban dispersas por centros privados consiguiendo una colaboración de los centros médicos líderes en dermatología. La base de datos está compuesta por metadatos demográficos sobre los pacientes, metadatos clínicos sobre la obtención de las imágenes e información sobre la lesión y finalmente imágenes de lesiones asociadas a los datos. Sin embargo, como ocurre normalmente cuando se centralizan datos de diferentes lugares, la base de datos cuenta con algunas imperfecciones asociadas a falta de datos importantes, diferentes formatos en imágenes o heterogeneidad entre la escala de datos, entre otras cosas, que es imprescindible solucionar antes de entrenar cualquier modelo de este estilo.
+
+En este capítulo se explica y justifica cómo se han obtenido los datos, cuál es la estructura original de los datos tanto del cuerpo de imágenes como del archivo de datos csv , se analizan las variables que componen el archivo, se hace un Análisis Exploratorio de Datos donde quedará representado la distribución actual de las variables, la detección de imperfecciones y problemas que deben ser afrontados más adelante como el desbalanceo de datos, y por último se justificará la selección del \textit{ground truth} y las clases objetivo. 
+
 \section{Adquisición y Estructura del Dataset Original}
 
 \subsection{Adquisición mediante \texttt{isic-cli}}
-La base de datos original se obtuvo del repositorio de la \textbf{International Skin Imaging Collaboration (ISIC)}. Debido al volumen masivo de información, se utilizó la herramienta oficial de línea de comandos \textbf{\texttt{isic-cli}}. Este método permitió una descarga estructurada y eficiente de las imágenes y su información asociada, garantizando la integridad de los archivos mediante protocolos de transferencia seguros.
+La base de datos original se obtuvo de \textbf{ISIC Archive}. Debido a la gran cantidad de imágenes e información que contiene este repositorio, descargarlo todo desde su página llevaba a problemas de velocidad de descarga y pérdidas de conexión que provocaba que se reiniciase este proceso. Para solucionar esto, se optó por usar la herramienta \textbf{\texttt{isic-cli}}, que es una aplicación de terminal que te permite hacer descargas masivas de datos a partir de comandos, o la creación de scripts de descarga específicos para evitar descargar todo el contenido sin orden ninguno. Esta herramienta permitió la descarga de la selección de datos que se va a usar para el estudio evitando hacer una descarga masiva de todos los datos, ahorrando así horas de descarga y garantizando la integridad de los archivos.
 
 \subsection{Estructura y Composición Inicial}
-El dataset original descargado se compone de dos elementos fundamentales:
+La estructura del dataset original descargado, se compone de dos partes principales:
 \begin{enumerate}
-	\item \textbf{Cuerpo de Imágenes:} Una colección de cientos de miles de archivos en formato JPEG de alta resolución, que representan capturas macroscópicas y dermatoscópicas de lesiones cutáneas.
-	\item \textbf{Archivo de Metadatos (CSV):} Un archivo tabular estándar de valores separados por comas que asocia cada identificador de imagen con la información sociodemográfica del paciente, clínica y técnica. El archivo crudo constaba de 552\,598 registros (filas) y 37 características (columnas).
+	\item \textbf{Cuerpo de Imágenes:} Cuenta con exactamente 552\,598 imágenes de alta resolución, obtenidas mediante varios tipos de captura de lesiones cutáneas, destacando sobre todo la dermatoscopia. Los diferentes métodos de captura de las lesiones provocan que no todas las imágenes tengan la misma extensión JPG que buscamos y sobre todo que no todas tengan el mismo tamaño en píxeles.
+	\item \textbf{Archivo de Metadatos (CSV):} Un archivo tabular, con los datos separados por comas comenzando con el identificador de la imagen que la relaciona. El resto de información son datos demográficos y clínicos del paciente así como datos técnicos de la lesión. El archivo cuenta con la misma cantidad de registros que imagenes, 552\,598 como hemos comentado anteriormente, y 37 columnas de características.
 \end{enumerate}
 
 
 \section{Diccionario de Variables y Naturaleza de los Datos}
-Para comprender el contexto del problema, es necesario definir la naturaleza de las variables proporcionadas por el archivo de metadatos. Las 37 características originales se pueden agrupar en tres grandes categorías:
+Para comprender el contexto del problema, es necesario entender las variables que componen el archivo de metadatos, las 37 columnas de características. Por lo tanto, para una mejor organización y entendimiento, podríamos dividir estas variables en 5 grandes categorías organizadas por la función que nos aporta cada una:
 
 \begin{itemize}
-	\item \textbf{Variables de Trazabilidad:} Identificadores únicos alfanuméricos como \texttt{isic\_id} (ID de la fotografía), \texttt{patient\_id} (ID del paciente) y \texttt{lesion\_id} (ID de la lesión física).
-	\item \textbf{Variables Sociodemográficas y Anatómicas:} Características del paciente en el momento de la captura, destacando \texttt{age\_approx} (edad aproximada en tramos de 5 años), \texttt{sex} (sexo biológico) y \texttt{anatom\_site\_general} (región corporal general como torso, extremidades o cabeza/cuello).
-	\item \textbf{Variables Técnicas de Adquisición:} Información sobre el hardware utilizado, siendo la más crítica \texttt{image\_type}, que distingue entre fotografías tomadas con dermatoscopio digital de contacto y fotografías clínicas de cuerpo entero (TBP - \textit{Total Body Photography}).
-	\item \textbf{Variables Diagnósticas (\textit{Ground Truth}):} Una serie de columnas, desde \texttt{diagnosis\_1} hasta \texttt{diagnosis\_5}, que catalogan la lesión con creciente nivel de especificidad histopatológica.
+	\item \textbf{Variables de Trazabilidad:} Como en todo dataset, aqui se incluyen los identificadores únicos alfanuméricos, de los que contamos con tres tipos diferentes de identificadores:
+	\begin{itemize}
+		\item \textit{Identificador de la imagen.} Uno por cada registro de fotografía en el dataset, independientemente de si son del mismo paciente o si es de una misma lesión.
+		\item \textit{Identificadores de lesión} Uno por cada tipo de lesión, el seguimiento de las lesiones cutáneas suele ser durante varios meses, por lo que no es de extrañar que una misma lesión tenga varias imágenes que se han ido tomando a lo largo del tiempo en un paciente.
+		\item \textit{Identificadores de paciente.} Uno por cada paciente, este puede tener una o varias lesiones con una o varias imágenes cada lesión. La mayor cantidad de registros de fotografías por paciente que se ha encontrado en el dataset original es de \textbf{XXXXX}.
+		\item \textit{rcm\_case\_id} Identificador de caso para microscopia, no es útil además de su gran porcentaje de nulos (99\,99%)
+	\end{itemize}
+
+	\item \textbf{Variables Sociodemográficas y Anatómicas:} Son las características del paciente en el momento en el que se captura la imagen de la lesión. Entre estas, las más importantes son:
+	\begin{itemize}
+		\item \textit{age\_aprox} Edad aproximada del paciente en tramos de 5 años.
+		\item \textit{sex} sexo biológico del paciente.
+		\item \textit{anatom\_site\_general} Región corporal general en la que se encuentra la lesión, como por ejemplo torso, extremidades, cabeza o cuello entre otras. Además existen mas características relacionadas que complementan el contenido de esta, por ejemplo anatom\_site\_1 hasta anatom\_site\_5 con nivel de especificación creciente.
+	\end{itemize}
+	
+	
+	\item \textbf{Variables Técnicas:} En este grupo se encuentran las variables con información sobre el hardware utilizado a la hora de tomar las fotografías y características de las imágenes. Entre estas, las más importantes son:
+	\begin{itemize}
+		\item \textit{image\_type.} La más importante de todas, distingue principalmente fotografías tomadas con dermatoscopio digital y fotografías clínicas de cuerpo entero (TBP - \textit{Total Body Photography}). Esta variable es tan importante tenerla en cuenta y estudiarla porque podría introducir un sesgo importante a nuestro modelo, que podría guiarse por el tipo de fotografía para clasificar, este problema lo abordamos mas adelante.
+		\item \textit{pixels\_x, pixels\_y.} Definen las dimensiones originales de la imagen obtenida. La importancia de estas variables es meramente informativa, nos sirve simplemente para decidir que estrategia de redimensionado de imagen nos conviene hacer según el tamaño original para no perder demasiado detalle. Finalmente como cambiaremos el tamaño para estandarizar la entrada del modelo no nos servirá esta variable.
+		\item \textit{Otras} En este apartado se encuentran variables que no resultan importantes o por la poca información que aportan o por la gran cantidad de nulos que contiene cada una. Algunas son \texttt{dermoscopic\_type} ofrece detalles sobre la iluminación (94\% nulos), \texttt{image\_manipulation} indica si hubro procesamiento previo de la imagen (18\%), \texttt{tbp\_tile\_type} relacionada con las capturas de tipo cuerpo entero (24\% nulos).
+		
+	\end{itemize}
+ 
+	\item \textbf{Variables Diagnósticas (\textit{Ground Truth}):} Un conjunto de columnas que van desde \texttt{diagnosis\_1} hasta \texttt{diagnosis\_5}, donde el 1 es el diagnóstico más general y conforme vamos bajando encontramos un diagnóstico más especifico. En este tipo de variables también se incluyen otras columnas como \texttt{diagnosis\_confirm\_type} o \texttt{melanocytic} que al tener porcentajes tan alto de nulos no resultan muy útiles (74\% y 85\% respectivamente).
+
+	\item \textbf{Variables clínicas sesgadas} La detección de información de este tipo es muy importante ya que introducen información no deseada en nuestra red provocando \textit{Data Leakage}. Estas variables contienen datos obtenidos después de la biopsia, entre otras \texttt{mel\_mitotic\_index}, \texttt{mel\_thick\_mm} o \texttt{mel\_ulcer} que son medidas y observaciones obtenidas post-biopsia.
+	
 \end{itemize}
 
 
 \section{Análisis Exploratorio de Datos (EDA) Original}
+
+
 Antes de aplicar cualquier técnica de curación, se realizó un estudio estadístico descriptivo sobre el conjunto bruto de 552\,598 registros para comprender la distribución de la población de estudio.
 
 \subsection{Distribución Demográfica}

@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  29 APR 2026 20:03
+This is LuaHBTeX, Version 1.17.1 (MiKTeX 24.1) (format=lualatex 2025.12.23)  5 MAY 2026 16:24
  restricted system commands enabled.
 **TFG_BarceloJimenez_Pablo.tex
 (./TFG_BarceloJimenez_Pablo.tex
@@ -1548,68 +1548,68 @@ Missing character: There is no – (U+2013) in font ec-lmbx12!
 ]
 Capítulo 3.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 12.
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 18.
 [14
 
 ]
-Overfull \hbox (17.0536pt too wide) in paragraph at lines 30--31
-[]\T1/lmr/bx/n/12 Va-ria-bles Diag-nós-ti-cas (\T1/lmr/bx/it/12 Ground Truth\T
-1/lmr/bx/n/12 ): \T1/lmr/m/n/12 Una se-rie de co-lum-nas, des-de \T1/lmtt/m/n/1
-2 diagnosis_1
- []
-
-LaTeX Info: Redefining \. on input line 43.
-LaTeX Info: Redefining \% on input line 43.
-[15]) (./capitulos/capitulo4.tex
+LaTeX Info: Redefining \. on input line 37.
+LaTeX Info: Redefining \% on input line 37.
+ [15]
+LaTeX Info: Redefining \. on input line 55.
+LaTeX Info: Redefining \% on input line 55.
+ [16]
+LaTeX Info: Redefining \. on input line 73.
+LaTeX Info: Redefining \% on input line 73.
+ [17]) (./capitulos/capitulo4.tex
 LaTeX Info: Redefining \. on input line 4.
 LaTeX Info: Redefining \% on input line 4.
- [16]
+ [18]
 Capítulo 4.
-[17
+[19
 
 ]
 LaTeX Info: Redefining \. on input line 33.
 LaTeX Info: Redefining \% on input line 33.
- [18]
+ [20]
 LaTeX Info: Redefining \. on input line 52.
 LaTeX Info: Redefining \% on input line 52.
- [19]
+ [21]
 LaTeX Info: Redefining \. on input line 78.
 LaTeX Info: Redefining \% on input line 78.
- [20]
+ [22]
 LaTeX Info: Redefining \. on input line 97.
 LaTeX Info: Redefining \% on input line 97.
- [21]
+ [23]
 LaTeX Info: Redefining \. on input line 118.
 LaTeX Info: Redefining \% on input line 118.
- [22]
+ [24]
 LaTeX Info: Redefining \. on input line 137.
 LaTeX Info: Redefining \% on input line 137.
- [23]
+ [25]
 LaTeX Info: Redefining \. on input line 163.
 LaTeX Info: Redefining \% on input line 163.
- [24]
+ [26]
 LaTeX Info: Redefining \. on input line 181.
 LaTeX Info: Redefining \% on input line 181.
- [25]
+ [27]
 LaTeX Info: Redefining \. on input line 202.
 LaTeX Info: Redefining \% on input line 202.
- [26]
+ [28]
 LaTeX Info: Redefining \. on input line 225.
 LaTeX Info: Redefining \% on input line 225.
- [27]
+ [29]
 LaTeX Info: Redefining \. on input line 247.
 LaTeX Info: Redefining \% on input line 247.
- [28]
+ [30]
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <10.95> on input line 268.
 )
 (./capitulos/capitulo5.tex
 LaTeX Info: Redefining \. on input line 2.
 LaTeX Info: Redefining \% on input line 2.
- [29]
+ [31]
 Capítulo 5.
-[30
+[32
 
 
 Missing character: There is no — (U+2014) in font ec-lmr12!
@@ -1622,7 +1622,7 @@ s: \T1/lmr/m/n/12 Me-dian-te \T1/lmtt/m/n/12 torchvision.models\T1/lmr/m/n/12 ,
 
 LaTeX Info: Redefining \. on input line 35.
 LaTeX Info: Redefining \% on input line 35.
-[31]
+[33]
 Overfull \hbox (19.32462pt too wide) in paragraph at lines 36--37
 \T1/lmr/m/n/12 nes en tiem-po real. Per-mi-tió apli-car per-tur-ba-cio-nes es-t
 o-cás-ti-cas (\T1/lmtt/m/n/12 RandomHorizontalFlip\T1/lmr/m/n/12 ,
@@ -1630,22 +1630,22 @@ o-cás-ti-cas (\T1/lmtt/m/n/12 RandomHorizontalFlip\T1/lmr/m/n/12 ,
 
 LaTeX Info: Redefining \. on input line 57.
 LaTeX Info: Redefining \% on input line 57.
-[32]
+[34]
 LaTeX Info: Redefining \. on input line 74.
 LaTeX Info: Redefining \% on input line 74.
- [33]
+ [35]
 LaTeX Info: Redefining \. on input line 92.
 LaTeX Info: Redefining \% on input line 92.
- [34]
+ [36]
 LaTeX Info: Redefining \. on input line 113.
 LaTeX Info: Redefining \% on input line 113.
- [35]
+ [37]
 LaTeX Info: Redefining \. on input line 135.
 LaTeX Info: Redefining \% on input line 135.
- [36]) (./capitulos/capitulo6.tex
+ [38]) (./capitulos/capitulo6.tex
 LaTeX Info: Redefining \. on input line 4.
 LaTeX Info: Redefining \% on input line 4.
- [37]
+ [39]
 Capítulo 6.
 
 Overfull \hbox (0.43088pt too wide) in paragraph at lines 23--24
@@ -1653,7 +1653,7 @@ Overfull \hbox (0.43088pt too wide) in paragraph at lines 23--24
 12 395154 imá-ge-nes pre-sen-ta-ban \T1/lmtt/m/n/12 patient_id
  []
 
-[38
+[40
 
 ]
 Overfull \hbox (3.18045pt too wide) in paragraph at lines 31--32
@@ -1663,7 +1663,7 @@ $ $% de nu-los (ej., \T1/lmtt/m/n/12 mel_mitotic_index\T1/lmr/m/n/12 :
 
 LaTeX Info: Redefining \. on input line 45.
 LaTeX Info: Redefining \% on input line 45.
-[39]
+[41]
 Overfull \hbox (1.06133pt too wide) in paragraph at lines 51--52
 []\T1/lmr/m/n/12 Los ni-ve-les \T1/lmtt/m/n/12 diagnosis_3\T1/lmr/m/n/12 , \T1/
 lmtt/m/n/12 diagnosis_4 \T1/lmr/m/n/12 y \T1/lmtt/m/n/12 diagnosis_5 \T1/lmr/m/
@@ -1672,16 +1672,16 @@ n/12 con-te-nían un ca-tá-lo-go exhaus-
 
 LaTeX Info: Redefining \. on input line 68.
 LaTeX Info: Redefining \% on input line 68.
-[40]
+[42]
 LaTeX Info: Redefining \. on input line 98.
 LaTeX Info: Redefining \% on input line 98.
- [41]
+ [43]
 LaTeX Info: Redefining \. on input line 118.
 LaTeX Info: Redefining \% on input line 118.
- [42]
+ [44]
 LaTeX Info: Redefining \. on input line 143.
 LaTeX Info: Redefining \% on input line 143.
- [43]
+ [45]
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\@ifnextchar' on input line 146.
@@ -1696,13 +1696,13 @@ Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 
 LaTeX Info: Redefining \. on input line 160.
 LaTeX Info: Redefining \% on input line 160.
-[44]
+[46]
 LaTeX Info: Redefining \. on input line 181.
 LaTeX Info: Redefining \% on input line 181.
- [45]
+ [47]
 LaTeX Info: Redefining \. on input line 212.
 LaTeX Info: Redefining \% on input line 212.
- [46]
+ [48]
 Overfull \hbox (19.26234pt too wide) in paragraph at lines 222--223
 []\T1/lmr/bx/n/12 Test Set (15$ $%): \T1/lmr/m/n/12 Un con-jun-to cie-go de pa-c
 ien-tes ex-traí-do me-dian-te \T1/lmtt/b/n/12 GroupShuffleSplit
@@ -1711,57 +1711,57 @@ ien-tes ex-traí-do me-dian-te \T1/lmtt/b/n/12 GroupShuffleSplit
 ) (./capitulos/capitulo7.tex
 LaTeX Info: Redefining \. on input line 2.
 LaTeX Info: Redefining \% on input line 2.
- [47]
+ [49]
 Capítulo 7.
-[48
+[50
 
 ]
 LaTeX Info: Redefining \. on input line 47.
 LaTeX Info: Redefining \% on input line 47.
- [49]
+ [51]
 LaTeX Info: Redefining \. on input line 77.
 LaTeX Info: Redefining \% on input line 77.
- [50]
+ [52]
 LaTeX Info: Redefining \. on input line 106.
 LaTeX Info: Redefining \% on input line 106.
- [51]
+ [53]
 LaTeX Info: Redefining \. on input line 136.
 LaTeX Info: Redefining \% on input line 136.
- [52]
+ [54]
 LaTeX Info: Redefining \. on input line 160.
 LaTeX Info: Redefining \% on input line 160.
- [53]
+ [55]
 LaTeX Info: Redefining \. on input line 190.
 LaTeX Info: Redefining \% on input line 190.
- [54]) (./capitulos/capitulo8.tex
+ [56]) (./capitulos/capitulo8.tex
 LaTeX Info: Redefining \. on input line 4.
 LaTeX Info: Redefining \% on input line 4.
- [55]
+ [57]
 Capítulo 8.
-[56
+[58
 
 ]
 LaTeX Info: Redefining \. on input line 52.
 LaTeX Info: Redefining \% on input line 52.
- [57]
+ [59]
 LaTeX Info: Redefining \. on input line 86.
 LaTeX Info: Redefining \% on input line 86.
- [58]
+ [60]
 LaTeX Info: Redefining \. on input line 117.
 LaTeX Info: Redefining \% on input line 117.
- [59]
+ [61]
 LaTeX Info: Redefining \. on input line 149.
 LaTeX Info: Redefining \% on input line 149.
- [60]
+ [62]
 LaTeX Info: Redefining \. on input line 183.
 LaTeX Info: Redefining \% on input line 183.
- [61]
+ [63]
 LaTeX Info: Redefining \. on input line 208.
 LaTeX Info: Redefining \% on input line 208.
- [62]
+ [64]
 LaTeX Info: Redefining \. on input line 230.
 LaTeX Info: Redefining \% on input line 230.
- [63]
+ [65]
 Overfull \hbox (15.67465pt too wide) in paragraph at lines 230--231
 []\T1/lmr/m/n/12 Man-te-ner la pre-ci-sión del mo-de-lo me-dian-te un es-ca-la-
 dor de gra-dien-tes (\T1/lmtt/m/n/12 GradScaler\T1/lmr/m/n/12 )
@@ -1770,9 +1770,9 @@ dor de gra-dien-tes (\T1/lmtt/m/n/12 GradScaler\T1/lmr/m/n/12 )
 ) (./capitulos/capitulo9.tex
 LaTeX Info: Redefining \. on input line 2.
 LaTeX Info: Redefining \% on input line 2.
- [64]
+ [66]
 Capítulo 9.
-) (./capitulos/capitulo10.tex [65
+) (./capitulos/capitulo10.tex [67
 
 ]
 Capítulo 10.
@@ -1780,11 +1780,11 @@ Capítulo 10.
 
 LaTeX Warning: Empty bibliography on input line 93.
 
-[66
+[68
 
 ]
 Apéndice A.
-[67
+[69
 
 ] (./TFG_BarceloJimenez_Pablo.aux
 LaTeX Info: Redefining \sptext on input line 12.
@@ -1804,23 +1804,23 @@ Package logreq Info: Writing requests to 'TFG_BarceloJimenez_Pablo.run.xml'.
 )
 
 Here is how much of LuaTeX's memory you used:
- 37002 strings out of 476497
+ 37004 strings out of 476497
  100000,1977958 words of node,token memory allocated
  861 words of node memory still in use:
    8 hlist, 2 vlist, 2 rule, 1 local_par, 6 glue, 6 kern, 1 penalty, 1 margin_ke
 rn, 4 glyph, 62 attribute, 72 glue_spec, 33 attribute_list, 2 write, 3 pdf_actio
 n nodes
-   avail lists: 1:1,2:1700,3:529,4:313,5:626,6:127,7:7410,8:39,9:737,10:26,11:11
+   avail lists: 1:1,2:1700,3:529,4:313,5:629,6:127,7:7410,8:39,9:737,10:33,11:11
 35
  57828 multiletter control sequences out of 65536+600000
  70 fonts using 4652879 bytes
- 84i,12n,84p,1020b,2408s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,84p,1262b,2408s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {C:/Users/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/U
 sers/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}{C:/Us
 ers/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Use
-rs/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}{C:/Users/p
-barc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/pb
-arc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}<C:/Users/pbarc/A
+rs/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/User
+s/pbarc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/pba
+rc/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}<C:/Users/pbarc/A
 ppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/pbarc/Ap
 pData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/pbarc/App
 Data/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbxi10.pfb><C:/Users/pbarc/App
@@ -1838,9 +1838,9 @@ ams/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/pbarc/AppData/Local/Progra
 ms/MiKTeX/fonts/type1/public/lm/lmsy8.pfb><C:/Users/pbarc/AppData/Local/Programs
 /MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Users/pbarc/AppData/Local/Programs/
 MiKTeX/fonts/type1/public/lm/lmtt12.pfb>
-Output written on TFG_BarceloJimenez_Pablo.pdf (68 pages, 671929 bytes).
+Output written on TFG_BarceloJimenez_Pablo.pdf (70 pages, 679022 bytes).
 
-PDF statistics: 1313 PDF objects out of 1440 (max. 8388607)
- 308 named destinations out of 1000 (max. 131072)
+PDF statistics: 1321 PDF objects out of 1440 (max. 8388607)
+ 310 named destinations out of 1000 (max. 131072)
  1384 words of extra memory for PDF output out of 10000 (max. 100000000)
 

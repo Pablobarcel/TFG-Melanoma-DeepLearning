@@ -29,8 +29,23 @@ class HybridRGBModel6Class(nn.Module):
         self.dropout = nn.Dropout(p=dropout_rate)
 
         # Dual-Head (4 clases en Head B)
-        self.head_A = nn.Linear(self.fusion_dim, 1)
-        self.head_B = nn.Linear(self.fusion_dim, num_classes_headB)
+        # self.head_A = nn.Linear(self.fusion_dim, 1)
+        # self.head_B = nn.Linear(self.fusion_dim, num_classes_headB)
+        
+        self.head_A = nn.Sequential(
+            nn.Linear(self.fusion_dim, 256),
+            nn.ReLU(),
+            nn.Dropout(p=0.4),
+            nn.Linear(256, 1)
+        )
+
+        # Head B: Multi-clase (Tipos de lesión)
+        self.head_B = nn.Sequential(
+            nn.Linear(self.fusion_dim, 256),
+            nn.ReLU(),
+            nn.Dropout(p=0.4),
+            nn.Linear(256, num_classes_headB)
+        )
 
     def forward(self, x):
         # 1. Rama CNN
