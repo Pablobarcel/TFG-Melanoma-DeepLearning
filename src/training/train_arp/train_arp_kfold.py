@@ -1,4 +1,3 @@
-# src/training/train_arp/train_arp_kfold.py
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,7 +6,7 @@ from sklearn.model_selection import StratifiedGroupKFold
 import pandas as pd
 import numpy as np
 import os
-from datetime import datetime
+from tqdm import tqdm
 
 # --- Importaciones del proyecto ---
 from src.config.seed import set_seed
@@ -15,7 +14,7 @@ from src.data.arp.dataset_arp import ARPDataset6Class
 from src.models.cnn_arp.arp_model_6class import ARPCNN6Class
 from src.data.transforms import get_train_transforms_arp, get_eval_transforms_arp
 from src.utils.class_weights import compute_class_weights
-from src.utils.losses import get_clinical_bce_loss 
+from src.utils.losses import get_clinical_bce_loss, FocalLoss 
 from src.utils.logger import ExperimentLogger
 from src.evaluation.evaluate_6class import evaluate
 from src.evaluation.metrics_6class import metrics_headA, metrics_headB
@@ -23,181 +22,159 @@ from src.evaluation.metrics_6class import metrics_headA, metrics_headB
 def train_arp_kfold():
     set_seed(42)
     
-    print("="*60)
-    print(" 🚀 INICIANDO ENTRENAMIENTO FINAL CNN ARP (Hiperparámetros Trial 36)")
-    print("="*60)
-
     # =================================================================
-    # 🔧 CONFIGURACIÓN PARA REANUDAR EL ENTRENAMIENTO
+    # 🔧 CONFIGURACIÓN DEL EXPERIMENTO
     # =================================================================
-    FOLD_A_EMPEZAR = 4  # Pon el número de Fold por el que quieres continuar (ej. 3)
+    RESUME_TRAINING = False  
+    RUN_ID_A_REANUDAR = None 
+    FOLD_A_EMPEZAR = 1 
     
-    # ⚠️ CAMBIA ESTO por el nombre de la carpeta de tu ejecución anterior 
-    # (Míralo en experiments/arp_cnn_kfold/logs/)
-    RESUME_RUN_NAME = "run_KFold_20260419_125502" 
-    # =================================================================
-
-    # --- 1. CONFIGURACIÓN (VALORES ÓPTIMOS OPTUNA) ---
     CSV_PATH = "C:/TFG/data/Original_Data/ISIC_FINAL/train.csv"
-    IMAGES_DIR = "C:/TFG/src/data/processed/images_ARP_ISIC"
+    # Asegúrate de que esta carpeta contenga los archivos ARP en formato .npy
+    IMAGES_DIR = "C:/TFG/src/data/processed/images_ARP_NPY_ISIC" 
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     NUM_FOLDS = 5
     EPOCHS = 100
     
-    # Valores extraídos del Trial 36
-    BATCH_SIZE = 64
-    LR = 8.995097146286293e-05
-    WD = 5.142301210750292e-05
+    # Hiperparámetros optimizados para ARP NPY[cite: 5, 6]
+    BATCH_SIZE = 128 
+    BASE_LR = 8.995e-05
+    WD = 5.142e-05
+    GAMMA = 3.0
+    
+    UMBRAL = 0.60 
+    SMOOTHING = 0.65
+    EARLY_STOPPING_PATIENCE = 15 
+    # =================================================================
 
-    print(f"🖥️ Dispositivo: {DEVICE}")
-    df = pd.read_csv(CSV_PATH)
-    
-    # Usamos el logger con el nombre de la ejecución anterior para unificar
-    logger = ExperimentLogger(experiment_name="arp_cnn_kfold", run_name=RESUME_RUN_NAME)
-    
-    sgkf = StratifiedGroupKFold(n_splits=NUM_FOLDS)
-    splits = list(sgkf.split(df, y=df['target'], groups=df['master_id']))
-
-    metricas_finales_f1 = []
-    
-    # Acumulador para promedios de TensorBoard (Saldrá desvirtuado si reanudas a medias)
-    avg_metrics = {
-        epoch: {
-            "train_loss": 0.0, "val_loss": 0.0,
-            "train_acc_A": 0.0, "val_acc_A": 0.0, "train_rec_A": 0.0, "val_rec_A": 0.0, "train_auc_A": 0.0, "val_auc_A": 0.0,
-            "train_acc_B": 0.0, "val_acc_B": 0.0, "train_rec_B": 0.0, "val_rec_B": 0.0, "train_f1_B": 0.0, "val_f1_B": 0.0,
-            "cm_train_A": np.zeros((2, 2)), "cm_val_A": np.zeros((2, 2)),
-            "cm_train_B": np.zeros((4, 4)), "cm_val_B": np.zeros((4, 4))
-        } for epoch in range(EPOCHS)
+    config_logger = {
+        "model_type": "ARP_CNN_NPY_CosineWarm",
+        "lr": BASE_LR, "batch_size": BATCH_SIZE, 
+        "epochs_total": EPOCHS, "threshold": UMBRAL
     }
 
-    # --- LÓGICA DE SALTO DE FOLDS ---
-    indice_start = FOLD_A_EMPEZAR - 1 
-    splits_restantes = splits[indice_start:]
+    logger = ExperimentLogger(
+        experiment_name="arp_cnn_npy_optimized", 
+        config=config_logger,
+        run_name=RUN_ID_A_REANUDAR if RESUME_TRAINING else None
+    )
+    
+    df = pd.read_csv(CSV_PATH)
+    sgkf = StratifiedGroupKFold(n_splits=NUM_FOLDS)
+    splits = list(sgkf.split(df, y=df['target'], groups=df['master_id']))
+    
+    avg_metrics_path = os.path.join(logger.results_dir, "avg_metrics_accumulator.npy")
+    if RESUME_TRAINING and os.path.exists(avg_metrics_path):
+        avg_metrics = np.load(avg_metrics_path, allow_pickle=True).item()
+    else:
+        avg_metrics = {e: {"train_loss": 0.0, "val_loss": 0.0, "train_f1_B": 0.0, "val_f1_B": 0.0} for e in range(EPOCHS)}
 
-    for fold, (train_idx, val_idx) in enumerate(splits_restantes, start=indice_start):
+    # 🚩 Precisión Mixta para acelerar el entrenamiento en la RTX
+    scaler = torch.amp.GradScaler('cuda')
+
+    for fold, (train_idx, val_idx) in enumerate(splits):
+        if fold + 1 < FOLD_A_EMPEZAR: continue
+            
         fold_prefix = f"Fold_{fold+1}"
-        print(f"\n" + "═"*60)
-        print(f" 📂 INICIANDO {fold_prefix}/{NUM_FOLDS} (REANUDADO)")
-        print("═"*60)
+        print(f"\n" + "═"*80 + f"\n 📂 INICIANDO {fold_prefix} (ARP NPY) \n" + "═"*80)
         
         df_train = df.iloc[train_idx].reset_index(drop=True)
         df_val = df.iloc[val_idx].reset_index(drop=True)
-        
-        # Datasets usando las transformaciones correctas (Sin VerticalFlip para ARP)
-        train_ds = ARPDataset6Class(df_train, IMAGES_DIR, transforms=get_train_transforms_arp())
-        val_ds = ARPDataset6Class(df_val, IMAGES_DIR, transforms=get_eval_transforms_arp())
-        
-        train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True)
-        val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True)
+
+        # DataLoader optimizado para evitar saturar la RAM compartida
+        train_loader = DataLoader(
+            ARPDataset6Class(df_train, IMAGES_DIR, get_train_transforms_arp()), 
+            batch_size=BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True, 
+            persistent_workers=True, prefetch_factor=2
+        )
+        val_loader = DataLoader(
+            ARPDataset6Class(df_val, IMAGES_DIR, get_eval_transforms_arp()), 
+            batch_size=BATCH_SIZE, shuffle=False, num_workers=4, pin_memory=True, 
+            persistent_workers=True
+        )
 
         model = ARPCNN6Class(num_classes_multiclass=4).to(DEVICE)
         
-        # Configuración de Pérdidas
-        criterion_A = get_clinical_bce_loss(df_train, factor_seguridad=2.0, device=DEVICE)
+        # Pérdidas con Label Smoothing y Focal Loss
+        criterion_A = get_clinical_bce_loss(df_train, device=DEVICE)
+        w_multi = compute_class_weights(df_train, DEVICE, smoothing=SMOOTHING)
+        criterion_B = FocalLoss(weight=w_multi, gamma=GAMMA)
         
-        w_multi = compute_class_weights(df_train, DEVICE, label_col="target")
-        criterion_B = nn.CrossEntropyLoss(weight=w_multi)
+        # 🚩 El optimizador y scheduler se definen UNA VEZ por Fold para que persistan[cite: 6]
+        optimizer = optim.AdamW(model.parameters(), lr=BASE_LR, weight_decay=WD)
         
-        optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=WD)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5)
-        
+        # Scheduler de Coseno con reinicios cada 15 épocas[cite: 6]
+        scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+            optimizer, T_0=15, T_mult=1, eta_min=1e-6
+        )
+
         best_val_f1 = 0.0
+        best_val_loss = float('inf')
+        early_stop_counter = 0
 
         for epoch in range(EPOCHS):
             model.train()
             running_loss = 0.0
+            yA_true, yA_pred, yA_prob, yB_true, yB_pred = [], [], [], [], []
             
-            yA_true_train, yA_pred_train, yA_prob_train = [], [], []
-            yB_true_train, yB_pred_train = [], []
+            pbar = tqdm(train_loader, desc=f"Epoch {epoch+1:03d} [ARP]", leave=False)
             
-            for images, yA, yB in train_loader:
+            for images, yA, yB in pbar:
                 images, yA, yB = images.to(DEVICE), yA.to(DEVICE), yB.to(DEVICE)
-                
                 optimizer.zero_grad()
-                outA, outB = model(images)
                 
-                lossA = criterion_A(outA.view(-1), yA)
-                lossB = criterion_B(outB, yB)
-                total_loss = lossA + lossB 
+                # Bloque AMP para optimización de GPU[cite: 6]
+                with torch.amp.autocast('cuda'):
+                    outA, outB = model(images)
+                    total_loss = criterion_A(outA.view(-1), yA) + criterion_B(outB, yB)
                 
-                total_loss.backward()
-                optimizer.step()
+                scaler.scale(total_loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
+                
                 running_loss += total_loss.item()
+                pbar.set_postfix({"loss": f"{total_loss.item():.4f}"})
                 
                 with torch.no_grad():
                     probA = torch.sigmoid(outA).view(-1)
-                    predA = (probA >= 0.5).long()
-                    predB = torch.argmax(outB, dim=1)
-                    
-                    yA_true_train.extend(yA.cpu().numpy())
-                    yA_pred_train.extend(predA.cpu().numpy())
-                    yA_prob_train.extend(probA.cpu().numpy())
-                    
-                    yB_true_train.extend(yB.cpu().numpy())
-                    yB_pred_train.extend(predB.cpu().numpy())
-                
+                    yA_true.extend(yA.cpu().numpy()); yA_pred.extend((probA >= UMBRAL).long().cpu().numpy())
+                    yA_prob.extend(probA.cpu().numpy()); yB_true.extend(yB.cpu().numpy())
+                    yB_pred.extend(torch.argmax(outB, dim=1).cpu().numpy())
+            
+            # --- EVALUACIÓN Y LOGS ---
             train_loss = running_loss / len(train_loader)
-            train_metrics = {
-                "headA": metrics_headA(np.array(yA_true_train), np.array(yA_pred_train), np.array(yA_prob_train)),
-                "headB": metrics_headB(np.array(yB_true_train), np.array(yB_pred_train))
-            }
+            val_loss, val_m = evaluate(model, val_loader, DEVICE, criterion_A, criterion_B, threshold=UMBRAL)
             
-            val_loss, val_metrics = evaluate(model, val_loader, DEVICE, criterion_A, criterion_B, threshold=0.5)
+            # 🚩 Actualizar scheduler una vez por época[cite: 6]
+            scheduler.step()
             
-            scheduler.step(val_loss)
             current_lr = optimizer.param_groups[0]['lr']
-            
-            val_f1 = val_metrics['headB']['macro_f1']
-            train_f1 = train_metrics['headB']['macro_f1']
-            
-            print(f"Epoch {epoch+1:03d}/{EPOCHS} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | Train F1: {train_f1:.4f} | Val F1: {val_f1:.4f}")
-            
-            # --- LOGGING UNIFICADO TENSORBOARD ---
-            logger.log_losses(train_loss, val_loss, epoch, fold_prefix)
-            logger.log_lr(current_lr, epoch, fold_prefix)
-            logger.log_metrics_both_phases(train_metrics, val_metrics, epoch, fold_prefix)
+            val_f1 = val_m['headB']['macro_f1']
+            print(f"✅ Epoch {epoch+1:03d} | Loss T/V: {train_loss:.4f}/{val_loss:.4f} | F1: {val_f1:.4f} | LR: {current_lr:.2e}")
+
+            # Registro de reportes completos
+            train_m = {"headA": metrics_headA(np.array(yA_true), np.array(yA_pred), np.array(yA_prob)), 
+                       "headB": metrics_headB(np.array(yB_true), np.array(yB_pred)), "loss": train_loss}
+            val_m["loss"] = val_loss
+            logger.log_full_report(train_m, val_m, epoch, fold_prefix=fold_prefix)
             
             if val_f1 > best_val_f1:
                 best_val_f1 = val_f1
-                logger.save_checkpoint(model, val_f1, best_val_f1, fold_prefix)
-                
-            # ACUMULAR DATOS PARA LA MEDIA FINAL
-            avg_metrics[epoch]["train_loss"] += train_loss
-            avg_metrics[epoch]["val_loss"] += val_loss
-            avg_metrics[epoch]["train_acc_A"] += train_metrics["headA"]["accuracy"]
-            avg_metrics[epoch]["val_acc_A"] += val_metrics["headA"]["accuracy"]
-            avg_metrics[epoch]["train_rec_A"] += train_metrics["headA"]["recall_malignant"]
-            avg_metrics[epoch]["val_rec_A"] += val_metrics["headA"]["recall_malignant"]
-            avg_metrics[epoch]["train_auc_A"] += train_metrics["headA"]["auc"]
-            avg_metrics[epoch]["val_auc_A"] += val_metrics["headA"]["auc"]
-            avg_metrics[epoch]["train_acc_B"] += train_metrics["headB"]["accuracy"]
-            avg_metrics[epoch]["val_acc_B"] += val_metrics["headB"]["accuracy"]
-            avg_metrics[epoch]["train_rec_B"] += train_metrics["headB"]["macro_recall"]
-            avg_metrics[epoch]["val_rec_B"] += val_metrics["headB"]["macro_recall"]
-            avg_metrics[epoch]["train_f1_B"] += train_metrics["headB"]["macro_f1"]
-            avg_metrics[epoch]["val_f1_B"] += val_metrics["headB"]["macro_f1"]
-            avg_metrics[epoch]["cm_train_A"] += train_metrics["headA"]["confusion_matrix"]
-            avg_metrics[epoch]["cm_val_A"] += val_metrics["headA"]["confusion_matrix"]
-            avg_metrics[epoch]["cm_train_B"] += train_metrics["headB"]["confusion_matrix"]
-            avg_metrics[epoch]["cm_val_B"] += val_metrics["headB"]["confusion_matrix"]
+                logger.save_checkpoint(model, fold_prefix, is_best=True)
 
-        metricas_finales_f1.append(best_val_f1)
+            # Lógica de Early Stopping
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                early_stop_counter = 0
+            else:
+                early_stop_counter += 1
+                if early_stop_counter >= EARLY_STOPPING_PATIENCE:
+                    print(f"🛑 Early Stopping en {fold_prefix}.")
+                    break
 
-    # Registro de medias finales (Average)
-    if FOLD_A_EMPEZAR == 1:
-        print("\n" + "═"*60)
-        print(" 📊 GENERANDO MÉTRICAS PROMEDIO DE LOS 5 FOLDS")
-        print("═"*60)
-        for epoch in range(EPOCHS):
-            # (Lógica interna para enviar promedios al logger bajo el prefijo "Average")
-            pass
-
-        print(f" ⭐ RESUMEN K-FOLD ARP: F1-Macro Promedio = {np.mean(metricas_finales_f1):.4f}")
-    else:
-        print("\n⚠️ El cálculo del Promedio Final ha sido omitido porque se reanudó desde un Fold avanzado.")
-        print("Los resultados de cada fold están seguros en tu carpeta de logs para calcular la media a mano.")
+    logger.close()
+    print("\n🏁 Entrenamiento ARP por K-Fold completado.")
 
 if __name__ == "__main__":
     train_arp_kfold()
